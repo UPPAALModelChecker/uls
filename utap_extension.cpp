@@ -60,7 +60,7 @@ TextRange& TextRange::intersect(const TextRange& other){
 
 TextRange TextRange::from(const UTAP::Document& doc, const UTAP::position_t& symbol){
     auto doc_start = doc.findFirstPosition(symbol.start);
-    auto start = symbol.start - doc_start.position;
-    auto end = std::numeric_limits<int32_t>::max();
+    uint32_t start = symbol.start - doc_start.position;
+    uint32_t end = std::numeric_limits<int32_t>::max();
     return {start, end};
 }
