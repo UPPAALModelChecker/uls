@@ -1,9 +1,10 @@
 #include <uls/system.h>
+#include <uls/server.h>
 #include <utap/utap.h>
 
 void SystemRepository::upload(const std::string& document){
     doc = std::make_unique<UTAP::Document>();
-    parseXMLBuffer(document.c_str(), doc.get(), true, {});
+    parse_XML_buffer(document.c_str(), doc.get(), true, {});
 
     // Fire on document update event
     for(auto& handler : on_document_update)
@@ -13,6 +14,9 @@ void SystemRepository::upload(const std::string& document){
 
 void SystemRepository::change_node(std::string xpath){
     current_node = std::move(xpath);
+
+    if(doc == nullptr)
+        return;
 
     // Fire on current document changed event
     for(auto& handler : on_current_node_changed)

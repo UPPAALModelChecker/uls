@@ -8,6 +8,7 @@ using namespace std::chrono_literals;
 using json = nlohmann::json;
 
 nlohmann::json OK_RESPONSE = {{"res", "OK"}};
+nlohmann::json FAIL_RESPONSE = {{"res", "FAIL"}};
 
 const Command& get_command(const std::vector<Command>& commands, const std::string& command_name){
     for(const auto& command : commands){
@@ -40,6 +41,7 @@ Server& Server::add_close_command(std::string name){
 }
 
 void Server::send(const std::string& message_type, const nlohmann::json& message){
+    // std::cerr << json{{"type", message_type}, {"msg", message}} << std::endl;
     io.out << json{{"type", message_type}, {"msg", message}} << std::endl;
 }
 

@@ -23,30 +23,45 @@ UTAP::declarations_t& navigate_template(UTAP::Document& doc, std::string_view pa
         throw std::out_of_range{"out_of_range"};
     }
 
-    auto template_it = doc.getTemplates().begin();
+    auto template_it = doc.get_templates().begin();
     std::advance(template_it, template_index - 1);
     return *template_it;
 }
 
 UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path){
     if(path.substr(0,5) != "/nta/")
-        throw std::invalid_argument{"Xpath did not start with 'nta/'"};
+        throw std::invalid_argument{"Xpath did not start with '/nta/'"};
 
     path = path.substr(5);
     if(starts_with(path, "declaration!"))
-        return doc.getGlobals();
+        return doc.get_globals();
     else if(starts_with(path, "system!"))
-        return doc.getGlobals(); // May be wrong
+        return doc.get_globals(); // May be wrong
     else if(starts_with(path, "template["))
         return navigate_template(doc, path.substr(9));
     else
         throw std::invalid_argument{"Path did not match anything"};
 
-    return doc.getGlobals();
+    return doc.get_globals();
+}
+
+UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path, uint32_t pos){
+    if(path == "/nta/")
+        return doc.get_globals();
+
+    UTAP::declarations_t& decl = navigate_xpath(doc, path);
+    
+    for(auto& func : decl.functions){
+        TextRange range{doc, func.body_position};
+        if(range.contains(pos))
+            return *func.body;
+    }
+
+    return decl;
 }
 
 TextRange::TextRange(const UTAP::Document& doc, const UTAP::position_t& symbol){
-    auto doc_start = doc.findFirstPosition(symbol.start);
+    auto doc_start = doc.find_first_position(symbol.start);
 
     begOffset = symbol.start - doc_start.position;
     endOffset = symbol.end - doc_start.position;
@@ -59,8 +74,12 @@ TextRange& TextRange::intersect(const TextRange& other){
 }
 
 TextRange TextRange::from(const UTAP::Document& doc, const UTAP::position_t& symbol){
-    auto doc_start = doc.findFirstPosition(symbol.start);
+    auto doc_start = doc.find_first_position(symbol.start);
     uint32_t start = symbol.start - doc_start.position;
     uint32_t end = std::numeric_limits<int32_t>::max();
     return {start, end};
+}
+
+bool TextRange::contains(uint32_t offset){
+    return begOffset <= offset && offset <= endOffset;
 }

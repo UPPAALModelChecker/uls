@@ -1,16 +1,11 @@
 #pragma once
+#include "server_module.h"
+
 #include <string>
 #include <functional>
 #include <vector>
 #include <nlohmann/json.hpp>
 #include <iosfwd>
-
-class Server;
-
-class ServerModule{
-public:
-    virtual void configure(Server& server) = 0;
-};
 
 struct Command{
     std::string name;
@@ -18,6 +13,7 @@ struct Command{
 };
 
 extern nlohmann::json OK_RESPONSE;
+extern nlohmann::json FAIL_RESPONSE;
 
 template<typename Data>
 struct Deserializer{};

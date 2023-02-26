@@ -24,9 +24,9 @@ std::vector<Keyword> keywords_for_path(UTAP::Document& doc, const std::string& x
     const auto& decls = navigate_xpath(doc, xpath);
 
     auto keywords = std::vector<Keyword>{};
-    DeclarationsWalker{doc}.visit_symbols(decls, [&](const UTAP::symbol_t& symbol, const TextRange& sym_range){
-        if(symbol.getType().is(UTAP::Constants::TYPEDEF)){
-            keywords.push_back({symbol.getName(), "KEYWORD3", sym_range});
+    DeclarationsWalker{doc, true}.visit_symbols(decls, [&](const UTAP::symbol_t& symbol, const TextRange& sym_range){
+        if(symbol.get_type().is(UTAP::Constants::TYPEDEF)){
+            keywords.push_back({symbol.get_name(), "KEYWORD3", sym_range});
         }
     });
     return keywords;
