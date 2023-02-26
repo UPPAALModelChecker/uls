@@ -36,9 +36,6 @@ endif(utap_FOUND)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
-
 add_library(uls_lib server.cpp highlight.cpp system.cpp utap_extension.cpp declarations.cpp)
 target_link_libraries(uls_lib PUBLIC UTAP nlohmann_json::nlohmann_json)
 target_include_directories(uls_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
