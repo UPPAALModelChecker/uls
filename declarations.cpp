@@ -3,55 +3,24 @@
 #include "utap_extension.h"
 #include <string>
 #include <iostream>
-#include <optional>
 #include <memory>
 #include <variant>
 #include <exception>
 
-struct GotoParams{
-    std::string xpath;
-    uint32_t offset;
-    std::string identifier;
-};
-
-struct GotoResult{
-    std::shared_ptr<std::string> path;
-    uint32_t start;
-    uint32_t end;
-};
-
-template<>
-struct Deserializer<GotoParams> {
-    static GotoParams deserialize(const nlohmann::json& message) {
-        return {
-            message["xpath"].get<std::string>(),
-            message["offset"].get<uint32_t>(),
-            message["identifier"].get<std::string>()
-        };
-    }
-};
-
-template<>
-struct Serializer<GotoResult> {
-    static nlohmann::json serialize(const GotoResult& result){
-        return {
-            {"xpath", *result.path},
-            {"start", result.start},
-            {"end", result.end}
-        };
-    }
-};
-
 struct Sym{
     UTAP::type_t type;
     UTAP::position_t position;
+    UTAP::symbol_t symbol;
+
+    explicit Sym(UTAP::symbol_t symbol): type{symbol.get_type()}, position{symbol.get_position()}, symbol{std::move(symbol)} {}
+    Sym(UTAP::type_t type, UTAP::position_t position): type{std::move(type)}, position{position} {}
 };
 
 std::optional<Sym> find_symbol(UTAP::Document& doc, UTAP::declarations_t& decls, std::string_view name){
     std::optional<Sym> result{};
     DeclarationsWalker{doc, false}.visit_symbols(decls, [&](const UTAP::symbol_t& symbol, const TextRange& range){
         if(!result.has_value() && symbol.get_name() == name){
-            result = std::make_optional<Sym>(Sym{symbol.get_type(), symbol.get_position()});
+            result = std::make_optional<Sym>(Sym{symbol});
             //TODO: add early termination when symbol is found
         }
     });
@@ -124,15 +93,14 @@ UTAP::declarations_t& find_process(UTAP::Document& doc, std::string_view name){
                 throw std::logic_error("Process did not have a template");
         }
     }
+    throw std::logic_error("No such process");
 }
 
-std::optional<GotoResult> find_declaration(UTAP::Document& doc, const GotoParams& params){
-    UTAP::declarations_t& decls = navigate_xpath(doc, params.xpath, params.offset);
-    
-    auto identifier = std::string_view(params.identifier);
-    SymFinder finder{doc, decls};
+std::optional<Sym> find_sym(UTAP::Document& doc, const Identifier& id){
+    UTAP::declarations_t& decls = navigate_xpath(doc, id.xpath, id.offset);
 
-    auto name_it = DotSeparator{identifier};
+    SymFinder finder{doc, decls};
+    auto name_it = DotSeparator{id.identifier};
     auto label = name_it.next();
     while(name_it.has_next()){
         auto struct_symbol = finder.find(label);
@@ -150,36 +118,43 @@ std::optional<GotoResult> find_declaration(UTAP::Document& doc, const GotoParams
         label = name_it.next();
     }
 
-    std::optional<Sym> symbol = finder.find(label);
+    return finder.find(label);
+}
+
+
+std::optional<UTAP::symbol_t> find_declaration(UTAP::Document& doc, const Identifier& params){
+    std::optional<Sym> sym = find_sym(doc, params);
+    if(!sym.has_value() || sym->symbol == UTAP::symbol_t{})
+        return std::nullopt;
+
+    return std::make_optional(sym->symbol);
+}
+
+std::optional<TextLocation> find_goto_result(UTAP::Document& doc, const Identifier& params){
+    std::optional<Sym> symbol = find_sym(doc, params);
     if(!symbol.has_value())
         return std::nullopt;
 
-    auto pos = symbol->position;
-    auto line = doc.find_first_position(pos.start);
-    uint32_t offset = pos.start - line.position;
-    uint32_t length = pos.end - pos.start;
-
-    return std::make_optional(GotoResult{
-        line.path,
-        offset,
-        offset + length
+    return std::make_optional(TextLocation{
+        doc,
+        symbol->position
     });
 }
 
-nlohmann::json find(SystemRepository& doc_repo, const GotoParams& params) {
+nlohmann::json find(SystemRepository& doc_repo, const Identifier& params) {
     UTAP::Document& doc = doc_repo.get_document();
 
-    auto result_opt = find_declaration(doc, params);
+    auto result_opt = find_goto_result(doc, params);
 
     // TODO use exceptions instead
     if(result_opt.has_value() && !(*result_opt->path == "/nta/system" && params.xpath.find("/template[") != std::string::npos))
-        return Serializer<GotoResult>::serialize(*result_opt);
+        return Serializer<TextLocation>::serialize(*result_opt);
     else
         return FAIL_RESPONSE;
 }
 
 void DeclarationsModule::configure(Server& server){
-    server.add_command<GotoParams>("goto_decl", [this](const GotoParams& params){
+    server.add_command<Identifier>("goto_decl", [this](const Identifier& params){
         return find(doc, params);
     });
 }

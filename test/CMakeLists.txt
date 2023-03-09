@@ -11,3 +11,7 @@ add_test(NAME test_highlight COMMAND test_highlight)
 add_executable(test_declarations test_declarations.cpp)
 target_link_libraries(test_declarations PRIVATE doctest::doctest uls_lib)
 add_test(NAME test_declarations COMMAND test_declarations)
+
+add_executable(test_renaming test_renaming.cpp)
+target_link_libraries(test_renaming PRIVATE doctest::doctest uls_lib)
+add_test(NAME test_renaming COMMAND test_renaming)

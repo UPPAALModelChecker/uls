@@ -24,6 +24,12 @@ struct MockIO : IOStream{
         return message["msg"];
     }
 
+    bool expect_error(){
+        nlohmann::json message;
+        out_buf >> message;
+        return message["type"] == "error";
+    }
+
     bool output_empty(){
         std::string x;
         out_buf >> x;

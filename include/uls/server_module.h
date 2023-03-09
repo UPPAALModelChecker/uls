@@ -1,5 +1,10 @@
 #pragma once
 
+template<typename Data>
+struct Deserializer{};
+template<typename Data>
+struct Serializer{};
+
 class Server;
 
 class ServerModule{

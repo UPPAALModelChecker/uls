@@ -1,5 +1,6 @@
 #include <uls/highlight.h>
 #include <uls/server.h>
+#include <uls/common_data.h>
 #include "utap_extension.h"
 
 #include <nlohmann/json.hpp>

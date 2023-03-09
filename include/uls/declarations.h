@@ -1,5 +1,10 @@
 #pragma once
 #include "system.h"
+#include "common_data.h"
+#include <utap/document.h>
+#include <optional>
+
+std::optional<UTAP::symbol_t> find_declaration(UTAP::Document& doc, const Identifier& id);
 
 class DeclarationsModule : public ServerModule {
     SystemRepository& doc;

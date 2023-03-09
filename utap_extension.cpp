@@ -1,4 +1,5 @@
 #include "utap_extension.h"
+#include <uls/common_data.h>
 #include <stdexcept>
 #include <charconv>
 #include <iterator>
@@ -58,28 +59,4 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path,
     }
 
     return decl;
-}
-
-TextRange::TextRange(const UTAP::Document& doc, const UTAP::position_t& symbol){
-    auto doc_start = doc.find_first_position(symbol.start);
-
-    begOffset = symbol.start - doc_start.position;
-    endOffset = symbol.end - doc_start.position;
-}
-
-TextRange& TextRange::intersect(const TextRange& other){
-    begOffset = std::max(begOffset, other.begOffset);
-    endOffset = std::min(endOffset, other.endOffset);
-    return *this;
-}
-
-TextRange TextRange::from(const UTAP::Document& doc, const UTAP::position_t& symbol){
-    auto doc_start = doc.find_first_position(symbol.start);
-    uint32_t start = symbol.start - doc_start.position;
-    uint32_t end = std::numeric_limits<int32_t>::max();
-    return {start, end};
-}
-
-bool TextRange::contains(uint32_t offset){
-    return begOffset <= offset && offset <= endOffset;
 }

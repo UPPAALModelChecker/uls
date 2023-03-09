@@ -15,11 +15,6 @@ struct Command{
 extern nlohmann::json OK_RESPONSE;
 extern nlohmann::json FAIL_RESPONSE;
 
-template<typename Data>
-struct Deserializer{};
-template<typename Data>
-struct Serializer{};
-
 // Define shared serializer/deserializer
 template<>
 struct Deserializer<std::string>{
@@ -75,6 +70,7 @@ class Server {
 public:
     Server(IOStream io) : io(std::move(io)) {}
     Server& add_module(ServerModule& server_module);
+
     template<typename ReturnType>
     Server& add_simple_command(std::string name, std::function<ReturnType()> callback){
         commands.push_back({name, [callback](nlohmann::json&){
@@ -82,6 +78,7 @@ public:
         }});
         return *this;
     }
+
     template<typename Data, typename Func>
     Server& add_command(std::string name, Func callback){
         commands.push_back({std::move(name), [callback](nlohmann::json& message) -> nlohmann::json {
@@ -90,12 +87,15 @@ public:
         }});
         return *this;
     }
+
     Server& add_close_command(std::string name);
+
     template<typename Data>
     void send_notification(const std::string& type, Data&& element){
         auto message = Serializer<std::remove_reference_t<Data>>::serialize(std::forward<Data>(element));
         send(type, message);
     }
+
     void start();
     void stop();
 };  

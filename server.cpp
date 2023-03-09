@@ -15,9 +15,7 @@ const Command& get_command(const std::vector<Command>& commands, const std::stri
         if(command.name == command_name)
             return command;
     }
-
-    std::cerr << "Unknown command" << std::endl;
-    throw std::exception();
+    throw std::invalid_argument("Unknown command name " + command_name);
 }
 
 void Server::start(){
@@ -26,11 +24,15 @@ void Server::start(){
 
     json message;
     while(is_running){
-        io.in >> message;
-        
-        const auto& command = get_command(commands, message["cmd"].get<std::string>());
-        auto response = command.callback(message["args"]);
-        send("response/" + command.name, response);
+        try{
+            io.in >> message;
+            
+            const auto& command = get_command(commands, message["cmd"].get<std::string>());
+            auto response = command.callback(message["args"]);
+            send("response/" + command.name, response);
+        }catch(std::exception& e){
+            send("error", e.what());
+        }
     }
 }
 
@@ -41,7 +43,6 @@ Server& Server::add_close_command(std::string name){
 }
 
 void Server::send(const std::string& message_type, const nlohmann::json& message){
-    // std::cerr << json{{"type", message_type}, {"msg", message}} << std::endl;
     io.out << json{{"type", message_type}, {"msg", message}} << std::endl;
 }
 

@@ -3,6 +3,7 @@
 #include <utap/document.h>
 #include <utap/utap.h>
 #include <uls/server.h>
+#include <uls/common_data.h>
 #include <string_view>
 
 /**
@@ -19,26 +20,6 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path)
  * Similar to previous overload but will return function scope iff pos is inside said function
  */
 UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path, uint32_t pos);
-
-
-struct TextRange{
-    uint32_t begOffset;
-    uint32_t endOffset;
-
-    TextRange() : TextRange{0, std::numeric_limits<int32_t>::max()} {}
-    TextRange(uint32_t start, uint32_t end) : begOffset{start}, endOffset{end} {}
-
-    /** Create the range that contains the given symbol*/
-    TextRange(const UTAP::Document& doc, const UTAP::position_t& symbol);
-
-    /** Create a range that contains the symbol and everything after*/
-    static TextRange from(const UTAP::Document& doc, const UTAP::position_t& symbol);
-
-    /** Get the intersection between two ranges*/
-    TextRange& intersect(const TextRange& other);
-
-    bool contains(uint32_t offset);
-};
 
 /**
  * This class is used to iterate through symbols from a given declarations
