@@ -23,6 +23,7 @@ public:
 
     // This should return a const reference but UTAP does not fully support const yet
     UTAP::Document& get_document() { return *doc; }
+    bool has_document() { return doc != nullptr; }
 
     const std::string& get_current_xpath() { return current_node; }
 };

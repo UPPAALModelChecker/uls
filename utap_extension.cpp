@@ -12,6 +12,8 @@ bool starts_with(std::string_view str, std::string_view other){
     return std::memcmp(str.begin(), other.begin(), other.length()) == 0;
 }
 
+// Likely undefined behaviour here, release is failing but debug is succeeding
+
 UTAP::declarations_t& navigate_template(UTAP::Document& doc, std::string_view path){
     int num_size = path.find_first_of(']');
     int template_index;
@@ -37,13 +39,11 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path)
     if(starts_with(path, "declaration!"))
         return doc.get_globals();
     else if(starts_with(path, "system!"))
-        return doc.get_globals(); // May be wrong
+        return doc.get_system_declarations();
     else if(starts_with(path, "template["))
         return navigate_template(doc, path.substr(9));
-    else
-        throw std::invalid_argument{"Path did not match anything"};
 
-    return doc.get_globals();
+    throw std::invalid_argument{"Path did not match anything"};
 }
 
 UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path, uint32_t pos){

@@ -3,6 +3,7 @@
 #include "common_data.h"
 #include <utap/document.h>
 #include <optional>
+#include <variant>
 
 std::optional<UTAP::symbol_t> find_declaration(UTAP::Document& doc, const Identifier& id);
 

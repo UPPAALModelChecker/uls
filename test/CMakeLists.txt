@@ -15,3 +15,7 @@ add_test(NAME test_declarations COMMAND test_declarations)
 add_executable(test_renaming test_renaming.cpp)
 target_link_libraries(test_renaming PRIVATE doctest::doctest uls_lib)
 add_test(NAME test_renaming COMMAND test_renaming)
+
+add_executable(test_autocomplete test_autocomplete.cpp)
+target_link_libraries(test_autocomplete PRIVATE doctest::doctest uls_lib)
+add_test(NAME test_autocomplete COMMAND test_autocomplete)

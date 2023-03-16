@@ -30,11 +30,11 @@ struct DeclarationsWalker{
     bool checkChildren;
 
     template<typename Func>
-    void visit_symbols(const UTAP::declarations_t& decls, Func f){
+    void visit_symbols(UTAP::declarations_t& decls, Func f){
         auto range = TextRange{};
 
         if(checkChildren){
-            for(const auto& func : decls.functions)
+            for(auto& func : decls.functions)
                 traverse_function(func, TextRange{doc, func.body_position}, f);
         }
 
@@ -45,9 +45,9 @@ struct DeclarationsWalker{
 private:
 
     template<typename Func>
-    void traverse_function(const UTAP::function_t& function, const TextRange& func_range, Func f){
+    void traverse_function(UTAP::function_t& function, const TextRange& func_range, Func f){
         
-        for(const auto& func : function.body->functions){
+        for(auto& func : function.body->functions){
             auto range = TextRange::from(doc, func.uid.get_position());
             f(func.uid, range.intersect(func_range));
             traverse_function(func, TextRange{doc, func.body_position}, f);
@@ -57,19 +57,19 @@ private:
     }
 
     template<typename Func>
-    void traverse_parents(const UTAP::declarations_t& decls, Func f){
+    void traverse_parents(UTAP::declarations_t& decls, Func f){
         UTAP::frame_t frame = decls.frame;
         while(frame.has_parent()){
             frame = frame.get_parent();
-            for(const auto& symbol : frame){
+            for(auto& symbol : frame){
                 f(symbol, TextRange{});
             }
         }
     }
 
     template<typename Func>
-    void handle_symbols(const UTAP::frame_t& frame, const TextRange& scope_range, Func f){
-        for(const auto& symbol : frame){
+    void handle_symbols(UTAP::frame_t frame, const TextRange& scope_range, Func f){
+        for(auto& symbol : frame){
             auto range = TextRange::from(doc, symbol.get_position());
             f(symbol, range.intersect(scope_range));
         }

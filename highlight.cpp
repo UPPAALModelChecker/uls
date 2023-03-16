@@ -22,7 +22,7 @@ struct Serializer<Keyword>{
 };
 
 std::vector<Keyword> keywords_for_path(UTAP::Document& doc, const std::string& xpath){
-    const auto& decls = navigate_xpath(doc, xpath);
+    auto& decls = navigate_xpath(doc, xpath);
 
     auto keywords = std::vector<Keyword>{};
     DeclarationsWalker{doc, true}.visit_symbols(decls, [&](const UTAP::symbol_t& symbol, const TextRange& sym_range){

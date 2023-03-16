@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(json)
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 
-add_library(uls_lib server.cpp highlight.cpp system.cpp utap_extension.cpp declarations.cpp renaming.cpp common_data.cpp)
+add_library(uls_lib server.cpp highlight.cpp system.cpp utap_extension.cpp declarations.cpp renaming.cpp common_data.cpp autocomplete.cpp)
 target_link_libraries(uls_lib PUBLIC UTAP nlohmann_json::nlohmann_json)
 target_include_directories(uls_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 

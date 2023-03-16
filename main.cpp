@@ -2,6 +2,7 @@
 #include <uls/highlight.h>
 #include <uls/declarations.h>
 #include <uls/renaming.h>
+#include <uls/autocomplete.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -11,6 +12,7 @@ int main(){
     auto highlight_module = Highlight{system_repo};
     auto declarations_module = DeclarationsModule{system_repo};
     auto renaming_module = RenamingModule{system_repo};
+    auto autocomplete_module = AutocompleteModule{system_repo};
 
     auto server = Server({std::cin, std::cout});
     server.add_close_command("exit")
@@ -18,9 +20,8 @@ int main(){
         .add_module(highlight_module)
         .add_module(declarations_module)
         .add_module(renaming_module)
+        .add_module(autocomplete_module)
         .start();
-
-
 
     return 0;
 }
