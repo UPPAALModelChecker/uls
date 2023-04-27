@@ -1,7 +1,7 @@
 #include <uls/highlight.h>
 #include <uls/server.h>
 #include <uls/common_data.h>
-#include "utap_extension.h"
+#include <uls/utap_extension.h>
 
 #include <nlohmann/json.hpp>
 #include <string>
@@ -29,6 +29,7 @@ std::vector<Keyword> keywords_for_path(UTAP::Document& doc, const std::string& x
         if(symbol.get_type().is(UTAP::Constants::TYPEDEF)){
             keywords.push_back({symbol.get_name(), "KEYWORD3", sym_range});
         }
+        return false;
     });
     return keywords;
 }
@@ -37,7 +38,7 @@ void Highlight::configure(Server& server){
     server.add_command<std::string>("keywords", [this](std::string xpath){ return keywords_for_path(repository.get_document(), xpath); });
     
     repository.add_on_document_update([this, &server](UTAP::Document& doc){
-        auto keywords = keywords_for_path(repository.get_document(), repository.get_current_xpath());
+        auto keywords = keywords_for_path(doc, repository.get_current_xpath());
         server.send_notification("notif/keywords", keywords);
     });
 

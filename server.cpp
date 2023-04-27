@@ -3,7 +3,9 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <ranges>
 
+namespace views = std::ranges::views;
 using namespace std::chrono_literals;
 using json = nlohmann::json;
 
@@ -23,14 +25,19 @@ void Server::start(){
     io.out << "json" << std::endl;
 
     json message;
+
     while(is_running){
         try{
             io.in >> message;
             
-            const auto& command = get_command(commands, message["cmd"].get<std::string>());
+            const Command& command = get_command(commands, message["cmd"].get<std::string>());
             auto response = command.callback(message["args"]);
             send("response/" + command.name, response);
-        }catch(std::exception& e){
+        }catch(nlohmann::json::parse_error& e){
+            send("error", e.what());
+            stop();
+        }
+        catch(std::exception& e){
             send("error", e.what());
         }
     }

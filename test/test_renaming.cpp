@@ -61,7 +61,7 @@ TEST_CASE("Find usages of x declaraed in global declarations"){
                                 {{"start",41}, {"end", 42}, {"xpath", "/nta/declaration"}},
                                 {{"start",8}, {"end", 9}, {"xpath", "/nta/template[1]/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 
@@ -87,7 +87,7 @@ TEST_CASE("Find usages of x from template"){
                                 {{"start",41}, {"end", 42}, {"xpath", "/nta/declaration"}},
                                 {{"start",8}, {"end", 9}, {"xpath", "/nta/template[1]/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Find usages of x inside function"){
@@ -110,7 +110,7 @@ TEST_CASE("Find usages of x inside function"){
     CHECK(mock.receive() == json{{{"start",57}, {"end", 58}, {"xpath", "/nta/declaration"}},
                                 {{"start",72}, {"end", 73}, {"xpath", "/nta/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Find usages inside types"){
@@ -135,7 +135,7 @@ TEST_CASE("Find usages inside types"){
                                 {{"start",92}, {"end", 93}, {"xpath", "/nta/declaration"}},
                                 {{"start",115}, {"end", 116}, {"xpath", "/nta/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 
@@ -188,7 +188,7 @@ TEST_CASE("Type visited multiple times issue"){
     CHECK(mock.receive() == json{{{"start",11}, {"end", 12}, {"xpath", "/nta/declaration"}},
                                 {{"start",34}, {"end", 35}, {"xpath", "/nta/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Find variable in system declarations"){
@@ -211,7 +211,7 @@ TEST_CASE("Find variable in system declarations"){
     CHECK(mock.receive() == json{{{"start",49}, {"end", 50}, {"xpath", "/nta/declaration"}},
                                 {{"start",27}, {"end", 28}, {"xpath", "/nta/system"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Find template name"){
@@ -233,5 +233,5 @@ TEST_CASE("Find template name"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK(mock.expect_error());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }

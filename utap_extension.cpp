@@ -1,4 +1,4 @@
-#include "utap_extension.h"
+#include <uls/utap_extension.h>
 #include <uls/common_data.h>
 #include <stdexcept>
 #include <charconv>
@@ -42,6 +42,8 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path)
         return doc.get_system_declarations();
     else if(starts_with(path, "template["))
         return navigate_template(doc, path.substr(9));
+    else if(starts_with(path, "queries!")) // Hard coded special case, due to weird handling of queries
+        return doc.get_system_declarations();
 
     throw std::invalid_argument{"Path did not match anything"};
 }
@@ -59,4 +61,16 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path,
     }
 
     return decl;
+}
+
+UTAP::template_t& find_process(UTAP::Document& doc, std::string_view name){
+    for(auto& process : doc.get_processes()){
+        if(process.uid.get_name() == name){
+            if(process.templ)
+                return *process.templ;
+            else
+                throw std::logic_error("Process did not have a template");
+        }
+    }
+    throw std::logic_error("No such process");
 }

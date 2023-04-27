@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.22.1)
 
 project(ULS CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set(WARNING_FLAGS -Wpedantic -Wall -Wextra -Werror)
 
 
 find_package(UTAP 1.1.6 QUIET)
@@ -36,8 +38,8 @@ endif(utap_FOUND)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+#add_compile_options(-fsanitize=address -fsanitize=undefined ${WARNING_FLAGS})
+#add_link_options(-fsanitize=address -fsanitize=undefined ${WARNING_FLAGS})
 
 add_library(uls_lib server.cpp highlight.cpp system.cpp utap_extension.cpp declarations.cpp renaming.cpp common_data.cpp autocomplete.cpp)
 target_link_libraries(uls_lib PUBLIC UTAP nlohmann_json::nlohmann_json)

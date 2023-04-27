@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iostream>
 
+#define CHECK_EOF(mock) CHECK(mock.read_raw() == ""); CHECK(mock.out_eof())
+
 struct MockIO : IOStream{
     std::stringstream in_buf{};
     std::stringstream out_buf{};
@@ -29,11 +31,15 @@ struct MockIO : IOStream{
         out_buf >> message;
         return message["type"] == "error";
     }
+    
+    bool out_eof(){
+        return out_buf.eof();
+    }
 
-    bool output_empty(){
+    std::string read_raw(){
         std::string x;
         out_buf >> x;
-        return x == "" && out_buf.eof();
+        return x;
     }
 
     bool handshake(){

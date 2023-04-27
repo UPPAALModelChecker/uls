@@ -47,7 +47,7 @@ TEST_CASE("Return value"){
     REQUIRE(mock.handshake());
     CHECK(mock.receive() == OK_RESPONSE);
     CHECK(mock.receive() == OK_RESPONSE);
-    CHECK(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 struct Person{
@@ -75,7 +75,7 @@ TEST_CASE("Test Deserializer"){
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
     
     CHECK(result.name == "Bob");
     CHECK(result.age == 32);
@@ -101,7 +101,7 @@ TEST_CASE("Test Serializer"){
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == json{{"name", "Fred"}, {"age", 23}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Stop command"){
@@ -113,5 +113,5 @@ TEST_CASE("Stop command"){
 
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.output_empty());
+    CHECK_EOF(mock);
 }

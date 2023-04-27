@@ -1,7 +1,7 @@
 #include <uls/renaming.h>
 #include <uls/server.h>
 #include <uls/declarations.h>
-#include "utap_extension.h"
+#include <uls/utap_extension.h>
 #include <utap/statement.h>
 #include <vector>
 #include <set>
@@ -18,7 +18,7 @@ void expr_accept(UTAP::expression_t expr, Func f){
         f(expr);
     }
 
-    for(int i = 0; i < expr.get_size(); ++i){
+    for(size_t i = 0; i < expr.get_size(); ++i){
         expr_accept(expr.get(i), f);
     }
 }
@@ -103,7 +103,7 @@ class UsageFinder : public UTAP::DocumentVisitor, public UTAP::ExpressionVisitor
             return;
 
         check_expr(type.get_expression());
-        for(int i = 0; i < type.size(); ++i){
+        for(size_t i = 0; i < type.size(); ++i){
             check_type(type.get(i));
         }
     }
@@ -138,7 +138,8 @@ public:
 
 std::vector<TextLocation> find_usages(SystemRepository& doc_repo, const Identifier& id){
     UTAP::Document& doc = doc_repo.get_document();
-    UTAP::symbol_t symbol = find_declaration(doc, id).value();
+    auto& decls = navigate_xpath(doc, id.xpath, id.offset);
+    UTAP::symbol_t symbol = std::get<UTAP::symbol_t>(find_declaration(doc, decls, id.identifier).value());
     if(symbol.get_type().is(UTAP::Constants::INSTANCE))
         throw std::logic_error{"Cannot rename processes"};
     

@@ -1,6 +1,5 @@
 #include <uls/declarations.h>
 #include <uls/server.h>
-#include "utap_extension.h"
 #include <string>
 #include <iostream>
 #include <memory>
@@ -18,11 +17,12 @@ struct Sym{
 
 std::optional<Sym> find_symbol(UTAP::Document& doc, UTAP::declarations_t& decls, std::string_view name){
     std::optional<Sym> result{};
-    DeclarationsWalker{doc, false}.visit_symbols(decls, [&](const UTAP::symbol_t& symbol, const TextRange& range){
+    DeclarationsWalker{doc, false}.visit_symbols(decls, [&](const UTAP::symbol_t& symbol, const TextRange&){
         if(!result.has_value() && symbol.get_name() == name){
             result = std::make_optional<Sym>(Sym{symbol});
-            //TODO: add early termination when symbol is found
+            return true; // Terminate early
         }
+        return false;
     });
     return result;
 }
@@ -53,17 +53,13 @@ std::optional<Sym> find_symbol(UTAP::type_t struct_type, std::string_view name){
     if(struct_type.is_constant())
         struct_type = struct_type.get(0);
 
-    for(int i = 0; i < struct_type.size(); ++i){
+    for(size_t i = 0; i < struct_type.size(); ++i){
         if(struct_type.get_label(i) == name)
             return std::make_optional<Sym>(Sym{struct_type.get(i), struct_type.get_field_position(i)});
     }
 
     return std::nullopt;
 }
-
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 class SymFinder{
 public:
@@ -84,23 +80,9 @@ private:
     SymbolSource symbol_source;
 };
 
-UTAP::declarations_t& find_process(UTAP::Document& doc, std::string_view name){
-    for(auto& process : doc.get_processes()){
-        if(process.uid.get_name() == name){
-            if(process.templ)
-                return *process.templ;
-            else
-                throw std::logic_error("Process did not have a template");
-        }
-    }
-    throw std::logic_error("No such process");
-}
-
-std::optional<Sym> find_sym(UTAP::Document& doc, const Identifier& id){
-    UTAP::declarations_t& decls = navigate_xpath(doc, id.xpath, id.offset);
-
+std::optional<Sym> find_sym(UTAP::Document& doc, UTAP::declarations_t& decls, std::string_view id){
     SymFinder finder{doc, decls};
-    auto name_it = DotSeparator{id.identifier};
+    auto name_it = DotSeparator{id};
     auto label = name_it.next();
     while(name_it.has_next()){
         auto struct_symbol = finder.find(label);
@@ -108,7 +90,7 @@ std::optional<Sym> find_sym(UTAP::Document& doc, const Identifier& id){
             if(struct_symbol->type.is_constant())
                 finder.set_source(struct_symbol->type.get(0).get(0));
             else if(struct_symbol->type.is(UTAP::Constants::INSTANCE))
-                finder.set_source(find_process(doc, label));
+                    finder.set_source(find_process(doc, label));
             else
                 finder.set_source(struct_symbol->type.get(0));
         }else{
@@ -121,24 +103,31 @@ std::optional<Sym> find_sym(UTAP::Document& doc, const Identifier& id){
     return finder.find(label);
 }
 
+std::optional<Sym> find_sym(UTAP::Document& doc, const Identifier& id){
+    UTAP::declarations_t& decls = navigate_xpath(doc, id.xpath, id.offset);
+    return find_sym(doc, decls, id.identifier);
+}
 
-std::optional<UTAP::symbol_t> find_declaration(UTAP::Document& doc, const Identifier& params){
-    std::optional<Sym> sym = find_sym(doc, params);
-    if(!sym.has_value() || sym->symbol == UTAP::symbol_t{})
-        return std::nullopt;
 
-    return std::make_optional(sym->symbol);
+std::optional<UtapEntity> find_declaration(UTAP::Document& doc, UTAP::declarations_t& decls,  std::string_view identifier){
+    if(std::optional<Sym> sym = find_sym(doc, decls, identifier)){
+        if(sym->symbol != UTAP::symbol_t{})
+            return std::make_optional(sym->symbol);
+        else
+            return std::make_optional(sym->type);
+    }
+    
+    return std::nullopt;
 }
 
 std::optional<TextLocation> find_goto_result(UTAP::Document& doc, const Identifier& params){
-    std::optional<Sym> symbol = find_sym(doc, params);
-    if(!symbol.has_value())
+    if(std::optional<Sym> symbol = find_sym(doc, params))
+        return std::make_optional(TextLocation{
+            doc,
+            symbol->position
+        });
+    else
         return std::nullopt;
-
-    return std::make_optional(TextLocation{
-        doc,
-        symbol->position
-    });
 }
 
 nlohmann::json find(SystemRepository& doc_repo, const Identifier& params) {

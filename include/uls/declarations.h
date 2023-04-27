@@ -3,9 +3,9 @@
 #include "common_data.h"
 #include <utap/document.h>
 #include <optional>
-#include <variant>
+#include <uls/utap_extension.h>
 
-std::optional<UTAP::symbol_t> find_declaration(UTAP::Document& doc, const Identifier& id);
+std::optional<UtapEntity> find_declaration(UTAP::Document& doc, UTAP::declarations_t& decls,  std::string_view identifier);
 
 class DeclarationsModule : public ServerModule {
     SystemRepository& doc;

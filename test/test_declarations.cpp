@@ -57,7 +57,7 @@ TEST_CASE("goto x declaration"){
     CHECK(response["start"] == 9);
     CHECK(response["end"] == 10);
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("goto y declaration"){
@@ -82,7 +82,7 @@ TEST_CASE("goto y declaration"){
     CHECK(response["start"] == 4);
     CHECK(response["end"] == 5);
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("goto z declaration from template"){
@@ -104,7 +104,7 @@ TEST_CASE("goto z declaration from template"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == FAIL_RESPONSE);
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("goto z declaration from system"){
@@ -129,7 +129,7 @@ TEST_CASE("goto z declaration from system"){
     CHECK(response["start"] == 5);
     CHECK(response["end"] == 6);
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Goto non existing declaration"){
@@ -151,7 +151,7 @@ TEST_CASE("Goto non existing declaration"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == FAIL_RESPONSE);
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Goto template"){
@@ -173,7 +173,7 @@ TEST_CASE("Goto template"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/template[1]"}, {"start", 0}, {"end", 1}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Goto template variable"){
@@ -195,7 +195,7 @@ TEST_CASE("Goto template variable"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/system"}, {"start", 12}, {"end", 27}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Goto function scopes"){
@@ -217,7 +217,7 @@ TEST_CASE("Goto function scopes"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/template[1]/declaration"}, {"start", 55}, {"end", 56}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 const std::string MODEL2 =  R"(<?xml version="1.0" encoding="utf-8"?>
@@ -265,7 +265,7 @@ TEST_CASE("Goto struct"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/declaration"}, {"start", 63}, {"end", 64}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Goto struct members"){
@@ -287,7 +287,7 @@ TEST_CASE("Goto struct members"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/declaration"}, {"start", 25}, {"end", 30}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 const std::string MODEL3 =  R"(<?xml version="1.0" encoding="utf-8"?>
@@ -339,7 +339,7 @@ TEST_CASE("Goto const struct members"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/declaration"}, {"start", 25}, {"end", 30}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
 
 TEST_CASE("Verifier template identifier"){
@@ -361,5 +361,5 @@ TEST_CASE("Verifier template identifier"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/template[1]/declaration"}, {"start", 6}, {"end", 15}});
     REQUIRE(mock.receive() == OK_RESPONSE);
-    REQUIRE(mock.output_empty());
+    CHECK_EOF(mock);
 }
