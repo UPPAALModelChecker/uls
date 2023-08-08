@@ -8,7 +8,7 @@ else(UTAP_FOUND)
     UTAP
     SYSTEM
     GIT_REPOSITORY https://github.com/thorulf4/utap.git
-    GIT_TAG lsp_changes
+    GIT_TAG rebased_lsp_changes
     GIT_SHALLOW TRUE # get only the last commit version
     GIT_PROGRESS TRUE # show progress of download
     FIND_PACKAGE_ARGS NAMES UTAP
