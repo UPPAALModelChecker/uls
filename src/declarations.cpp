@@ -109,7 +109,7 @@ std::optional<Sym> find_sym(UTAP::Document& doc, const Identifier& id){
 }
 
 
-std::optional<UtapEntity> find_declaration(UTAP::Document& doc, UTAP::declarations_t& decls,  std::string_view identifier){
+std::optional<UtapEntity> find_declaration(UTAP::Document& doc, UTAP::declarations_t& decls, std::string_view identifier){
     if(std::optional<Sym> sym = find_sym(doc, decls, identifier)){
         if(sym->symbol != UTAP::symbol_t{})
             return std::make_optional(sym->symbol);

@@ -5,13 +5,6 @@
 #include <iterator>
 #include <cstring>
 
-bool starts_with(std::string_view str, std::string_view other){
-    if(str.length() < other.length())
-        return false;
-
-    return std::memcmp(str.begin(), other.begin(), other.length()) == 0;
-}
-
 // Likely undefined behaviour here, release is failing but debug is succeeding
 
 UTAP::declarations_t& navigate_template(UTAP::Document& doc, std::string_view path){
@@ -36,13 +29,13 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path)
         throw std::invalid_argument{"Xpath did not start with '/nta/'"};
 
     path = path.substr(5);
-    if(starts_with(path, "declaration!"))
+    if(path.starts_with("declaration!"))
         return doc.get_globals();
-    else if(starts_with(path, "system!"))
+    else if(path.starts_with("system!"))
         return doc.get_system_declarations();
-    else if(starts_with(path, "template["))
+    else if(path.starts_with("template["))
         return navigate_template(doc, path.substr(9));
-    else if(starts_with(path, "queries!")) // Hard coded special case, due to weird handling of queries
+    else if(path.starts_with("queries!")) // Hard coded special case, due to weird handling of queries
         return doc.get_system_declarations();
 
     throw std::invalid_argument{"Path did not match anything"};

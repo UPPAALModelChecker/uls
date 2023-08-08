@@ -34,23 +34,19 @@ bool is_unique(std::string_view item) {
 /** Transforms a json response into a json array of names */
 json name_view(const auto& suggestions) {
     json result;
-    std::ranges::move(suggestions | views::transform(get_name), std::back_inserter(result));
+    std::ranges::copy(suggestions | views::transform(get_name), std::back_inserter(result));
     return result;
 }
 
 /** Filters names to not include default names */
 json unique_name_view(const auto& suggestions) {
     json result;
-    std::ranges::move(suggestions | views::transform(get_name) | views::filter(is_unique), std::back_inserter(result));
+    for(const json& suggestion : suggestions){
+        std::string name = suggestion["name"];
+        if(is_unique(name))
+            result.emplace_back(std::move(name));
+    }
     return result;
-}
-
-/** Filters names to not include default names */
-std::vector<std::string> unique_names(const auto& suggestions) {
-
-    std::string x = views::transform(suggestions, get_name)[2];
-
-    return suggestions | views::transform(get_name) | views::filter(is_unique) | to<std::vector>();
 }
 
 
