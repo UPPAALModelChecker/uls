@@ -103,15 +103,6 @@ bool is_struct(const UTAP::symbol_t& sym)
 
 bool is_template(const UTAP::symbol_t& sym) { return sym.get_type().is(UTAP::Constants::INSTANCE); }
 
-bool ends_with(std::string_view str, std::string_view ending)
-{
-    size_t size = ending.size();
-    if (size > str.size())
-        return false;
-
-    return str.substr(str.size() - size) == ending;
-}
-
 bool is_digit(unsigned char c) { return std::isdigit(c); }
 
 // Uppaal will name unnamed locations _id0, _id1, _id2, etc. check for this pattern

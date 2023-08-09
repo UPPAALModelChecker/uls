@@ -14,16 +14,6 @@
 namespace views = std::ranges::views;
 using json = nlohmann::json;
 
-template <template <class...> class Result>
-struct to
-{
-    template <std::ranges::range Range>
-    Result<std::ranges::range_value_t<Range>> operator|(Range&& range)
-    {
-        return {std::ranges::begin(range), std::ranges::end(range)};
-    }
-};
-
 std::string get_name(const json& item) { return item["name"]; }
 
 bool is_unique(std::string_view item)
