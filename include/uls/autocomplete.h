@@ -3,7 +3,8 @@
 #include <set>
 #include <string>
 
-class AutocompleteModule : public ServerModule{
+class AutocompleteModule : public ServerModule
+{
     SystemRepository& doc_repo;
 
 public:

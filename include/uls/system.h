@@ -5,8 +5,10 @@
 #include <functional>
 #include <string>
 
-struct WorkingDocument {
+struct WorkingDocument
+{
     std::string document;
+
 public:
     void set_document(std::string document);
     void insert(std::string str, int offset);
@@ -15,7 +17,8 @@ public:
 };
 
 /** This module stores information about the current document and is mainly used to provide events for other modules */
-class SystemRepository : public ServerModule {
+class SystemRepository : public ServerModule
+{
     std::unique_ptr<UTAP::Document> doc;
     WorkingDocument working_doc;
     std::string current_node{"/nta/template[1]"};

@@ -14,53 +14,60 @@
 namespace views = std::ranges::views;
 using json = nlohmann::json;
 
-template<template<class ...> class Result>
-struct to{
-    template<std::ranges::range Range>
-    Result<std::ranges::range_value_t<Range>> operator|(Range&& range){
+template <template <class...> class Result>
+struct to
+{
+    template <std::ranges::range Range>
+    Result<std::ranges::range_value_t<Range>> operator|(Range&& range)
+    {
         return {std::ranges::begin(range), std::ranges::end(range)};
     }
 };
 
-std::string get_name(const json& item) {
-    return item["name"];
-}
+std::string get_name(const json& item) { return item["name"]; }
 
-bool is_unique(std::string_view item) {
-    static std::vector<std::string_view> filtered_names{"DBL_MAX","DBL_MIN","FLT_MAX","FLT_MIN","INT16_MAX","INT16_MIN","INT32_MAX","INT32_MIN","INT8_MAX","INT8_MIN","M_1_PI","M_2_PI","M_2_SQRTPI","M_E","M_LN10","M_LN2","M_LOG10E","M_LOG2E","M_PI","M_PI_2","M_PI_4","M_SQRT1_2","M_SQRT2","UINT16_MAX","UINT8_MAX","bool","broadcast","chan","clock","const","double","exists","false","forall","int","int16_t","int32_t","int8_t","meta","return","struct","true","typedef","uint16_t","uint8_t","urgent","void"};
+bool is_unique(std::string_view item)
+{
+    static std::vector<std::string_view> filtered_names{
+        "DBL_MAX",   "DBL_MIN",  "FLT_MAX",   "FLT_MIN",  "INT16_MAX",  "INT16_MIN", "INT32_MAX", "INT32_MIN",
+        "INT8_MAX",  "INT8_MIN", "M_1_PI",    "M_2_PI",   "M_2_SQRTPI", "M_E",       "M_LN10",    "M_LN2",
+        "M_LOG10E",  "M_LOG2E",  "M_PI",      "M_PI_2",   "M_PI_4",     "M_SQRT1_2", "M_SQRT2",   "UINT16_MAX",
+        "UINT8_MAX", "bool",     "broadcast", "chan",     "clock",      "const",     "double",    "exists",
+        "false",     "forall",   "int",       "int16_t",  "int32_t",    "int8_t",    "meta",      "return",
+        "struct",    "true",     "typedef",   "uint16_t", "uint8_t",    "urgent",    "void"};
     return std::ranges::find(filtered_names, item) == filtered_names.end();
 }
 
 /** Transforms a json response into a json array of names */
-json name_view(const auto& suggestions) {
+json name_view(const auto& suggestions)
+{
     json result;
     std::ranges::copy(suggestions | views::transform(get_name), std::back_inserter(result));
     return result;
 }
 
 /** Filters names to not include default names */
-json unique_name_view(const auto& suggestions) {
+json unique_name_view(const auto& suggestions)
+{
     json result;
-    for(const json& suggestion : suggestions){
+    for (const json& suggestion : suggestions) {
         std::string name = suggestion["name"];
-        if(is_unique(name))
+        if (is_unique(name))
             result.emplace_back(std::move(name));
     }
     return result;
 }
 
-
-
-
-const json& find(const json& array, std::string_view name){
-    auto found = std::ranges::find_if(array, [&](const json& suggestion){ return suggestion["name"] == name; });
-    if(found != array.end())
+const json& find(const json& array, std::string_view name)
+{
+    auto found = std::ranges::find_if(array, [&](const json& suggestion) { return suggestion["name"] == name; });
+    if (found != array.end())
         return *found;
 
     throw std::logic_error{"Couldnt find element"};
 }
 
-const std::string MODEL =  R"(<?xml version="1.0" encoding="utf-8"?>
+const std::string MODEL = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -104,7 +111,8 @@ system p;
 </system>
 </nta>)";
 
-TEST_CASE("Autocomplete test default items"){
+TEST_CASE("Autocomplete test default items")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};
 
@@ -114,26 +122,25 @@ TEST_CASE("Autocomplete test default items"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     // All built-in typedefs are included, the intresting items are (item1, item2, item3)
     auto results = mock.receive();
-    CHECK(name_view(results) == json{"int","double","clock","chan","bool","broadcast","const","urgent","void","meta",
-    "true","false","forall","exists","return","typedef","struct","INT8_MIN","INT8_MAX","UINT8_MAX","INT16_MIN",
-    "INT16_MAX","UINT16_MAX","INT32_MIN","INT32_MAX","int8_t","uint8_t","int16_t","uint16_t","int32_t","FLT_MIN",
-    "FLT_MAX","DBL_MIN","DBL_MAX","M_PI","M_PI_2","M_PI_4","M_E","M_LOG2E","M_LOG10E","M_LN2","M_LN10","M_1_PI","M_2_PI"
-    ,"M_2_SQRTPI","M_SQRT2","M_SQRT1_2"});
+    CHECK(name_view(results) ==
+          json{"int",       "double",   "clock",    "chan",      "bool",       "broadcast", "const",      "urgent",
+               "void",      "meta",     "true",     "false",     "forall",     "exists",    "return",     "typedef",
+               "struct",    "INT8_MIN", "INT8_MAX", "UINT8_MAX", "INT16_MIN",  "INT16_MAX", "UINT16_MAX", "INT32_MIN",
+               "INT32_MAX", "int8_t",   "uint8_t",  "int16_t",   "uint16_t",   "int32_t",   "FLT_MIN",    "FLT_MAX",
+               "DBL_MIN",   "DBL_MAX",  "M_PI",     "M_PI_2",    "M_PI_4",     "M_E",       "M_LOG2E",    "M_LOG10E",
+               "M_LN2",     "M_LN10",   "M_1_PI",   "M_2_PI",    "M_2_SQRTPI", "M_SQRT2",   "M_SQRT1_2"});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-
-TEST_CASE("Autocomplete struct type"){
+TEST_CASE("Autocomplete struct type")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};
 
@@ -143,20 +150,18 @@ TEST_CASE("Autocomplete struct type"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto results = mock.receive();
-    CHECK(name_view(results) == json{"p_a.x","p_a.y","p_a.z"});
+    CHECK(name_view(results) == json{"p_a.x", "p_a.y", "p_a.z"});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Autocomplete struct type with full member"){
+TEST_CASE("Autocomplete struct type with full member")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};
 
@@ -166,20 +171,18 @@ TEST_CASE("Autocomplete struct type with full member"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto results = mock.receive();
-    CHECK(name_view(results) == json{"p_a.x","p_a.y","p_a.z"});
+    CHECK(name_view(results) == json{"p_a.x", "p_a.y", "p_a.z"});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Autocomplete nested struct type"){
+TEST_CASE("Autocomplete nested struct type")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};
 
@@ -189,20 +192,22 @@ TEST_CASE("Autocomplete nested struct type"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto results = mock.receive();
-    CHECK(unique_name_view(results) == json{"e.pos.x","e.pos.y","e.pos.z",});
+    CHECK(unique_name_view(results) == json{
+                                           "e.pos.x",
+                                           "e.pos.y",
+                                           "e.pos.z",
+                                       });
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Autocomplete template sub members"){
+TEST_CASE("Autocomplete template sub members")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};  // Use an empty set of builtin items
 
@@ -212,11 +217,8 @@ TEST_CASE("Autocomplete template sub members"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto results = mock.receive();
@@ -225,7 +227,7 @@ TEST_CASE("Autocomplete template sub members"){
     CHECK_EOF(mock);
 }
 
-const std::string MODEL2 =  R"(<?xml version="1.0" encoding="utf-8"?>
+const std::string MODEL2 = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -250,7 +252,8 @@ system p;
 </system>
 </nta>)";
 
-TEST_CASE("Autocomplete template sub members"){
+TEST_CASE("Autocomplete template sub members")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};  // Use an empty set of builtin items
 
@@ -260,11 +263,8 @@ TEST_CASE("Autocomplete template sub members"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto results = mock.receive();
@@ -275,7 +275,7 @@ TEST_CASE("Autocomplete template sub members"){
     CHECK_EOF(mock);
 }
 
-const std::string MODEL3 =  R"(<?xml version="1.0" encoding="utf-8"?>
+const std::string MODEL3 = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -309,7 +309,8 @@ system p;
 </system>
 </nta>)";
 
-TEST_CASE("Autocomplete template sub members"){
+TEST_CASE("Autocomplete template sub members")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};
 
@@ -319,11 +320,8 @@ TEST_CASE("Autocomplete template sub members"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK(unique_name_view(mock.receive()) == json{"point", "p_a", "func"});
@@ -331,7 +329,8 @@ TEST_CASE("Autocomplete template sub members"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Autocomplete template parameter no variables"){
+TEST_CASE("Autocomplete template parameter no variables")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};  // Use an empty set of builtin items
 
@@ -341,11 +340,8 @@ TEST_CASE("Autocomplete template parameter no variables"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK(unique_name_view(mock.receive()) == json{"point"});
@@ -353,7 +349,8 @@ TEST_CASE("Autocomplete template parameter no variables"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Autocomplete template dont see locations"){
+TEST_CASE("Autocomplete template dont see locations")
+{
     auto repo = SystemRepository{};
     auto autocomplete = AutocompleteModule{repo};  // Use an empty set of builtin items
 
@@ -363,11 +360,8 @@ TEST_CASE("Autocomplete template dont see locations"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(autocomplete)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK(unique_name_view(mock.receive()) == json{"xax", "point", "p_a", "func"});

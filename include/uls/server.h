@@ -7,7 +7,8 @@
 #include <vector>
 #include <iosfwd>
 
-struct Command{
+struct Command
+{
     std::string name;
     std::function<nlohmann::json(nlohmann::json&)> callback;
 };
@@ -15,12 +16,14 @@ struct Command{
 extern nlohmann::json OK_RESPONSE;
 extern nlohmann::json FAIL_RESPONSE;
 
-struct IOStream{
+struct IOStream
+{
     std::istream& in;
     std::ostream& out;
 };
 
-class Server {
+class Server
+{
     std::vector<Command> commands;
     IOStream io;
     bool is_running{false};
@@ -28,34 +31,36 @@ class Server {
     void send(const std::string& message_type, const nlohmann::json& message);
 
 public:
-    Server(IOStream io) : io(std::move(io)) {}
+    Server(IOStream io): io(std::move(io)) {}
     Server& add_module(ServerModule& server_module);
 
-    template<typename ReturnType>
-    Server& add_simple_command(std::string name, std::function<ReturnType()> callback){
-        commands.push_back({name, [callback](nlohmann::json&){
-            return Serializer<ReturnType>::serialize(callback());
-        }});
+    template <typename ReturnType>
+    Server& add_simple_command(std::string name, std::function<ReturnType()> callback)
+    {
+        commands.push_back(
+            {name, [callback](nlohmann::json&) { return Serializer<ReturnType>::serialize(callback()); }});
         return *this;
     }
 
-    template<typename Data, typename Func>
-    Server& add_command(std::string name, Func callback){
+    template <typename Data, typename Func>
+    Server& add_command(std::string name, Func callback)
+    {
         commands.push_back({std::move(name), [callback](nlohmann::json& message) -> nlohmann::json {
-            auto result = callback(Deserializer<Data>::deserialize(message));
-            return Serializer<std::invoke_result_t<Func, Data>>::serialize(std::move(result));
-        }});
+                                auto result = callback(Deserializer<Data>::deserialize(message));
+                                return Serializer<std::invoke_result_t<Func, Data>>::serialize(std::move(result));
+                            }});
         return *this;
     }
 
     Server& add_close_command(std::string name);
 
-    template<typename Data>
-    void send_notification(const std::string& type, Data&& element){
+    template <typename Data>
+    void send_notification(const std::string& type, Data&& element)
+    {
         auto message = Serializer<std::remove_reference_t<Data>>::serialize(std::forward<Data>(element));
         send(type, message);
     }
 
     void start();
     void stop();
-};  
+};

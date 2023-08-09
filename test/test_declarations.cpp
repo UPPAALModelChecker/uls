@@ -7,7 +7,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-const std::string MODEL =  R"(<?xml version="1.0" encoding="utf-8"?>
+const std::string MODEL = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -35,7 +35,8 @@ system p;
 
 using json = nlohmann::json;
 
-TEST_CASE("goto x declaration"){
+TEST_CASE("goto x declaration")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -45,11 +46,8 @@ TEST_CASE("goto x declaration"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto response = mock.receive();
@@ -60,7 +58,8 @@ TEST_CASE("goto x declaration"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("goto y declaration"){
+TEST_CASE("goto y declaration")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -70,11 +69,8 @@ TEST_CASE("goto y declaration"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto response = mock.receive();
@@ -85,7 +81,8 @@ TEST_CASE("goto y declaration"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("goto z declaration from template"){
+TEST_CASE("goto z declaration from template")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -95,11 +92,8 @@ TEST_CASE("goto z declaration from template"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == FAIL_RESPONSE);
@@ -107,7 +101,8 @@ TEST_CASE("goto z declaration from template"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("goto z declaration from system"){
+TEST_CASE("goto z declaration from system")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -117,11 +112,8 @@ TEST_CASE("goto z declaration from system"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     auto response = mock.receive();
@@ -132,7 +124,8 @@ TEST_CASE("goto z declaration from system"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Goto non existing declaration"){
+TEST_CASE("Goto non existing declaration")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -142,11 +135,8 @@ TEST_CASE("Goto non existing declaration"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == FAIL_RESPONSE);
@@ -154,7 +144,8 @@ TEST_CASE("Goto non existing declaration"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Goto template"){
+TEST_CASE("Goto template")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -164,11 +155,8 @@ TEST_CASE("Goto template"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/template[1]"}, {"start", 0}, {"end", 1}});
@@ -176,7 +164,8 @@ TEST_CASE("Goto template"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Goto template variable"){
+TEST_CASE("Goto template variable")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -186,11 +175,8 @@ TEST_CASE("Goto template variable"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/system"}, {"start", 12}, {"end", 27}});
@@ -198,7 +184,8 @@ TEST_CASE("Goto template variable"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Goto function scopes"){
+TEST_CASE("Goto function scopes")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -208,11 +195,8 @@ TEST_CASE("Goto function scopes"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/template[1]/declaration"}, {"start", 55}, {"end", 56}});
@@ -220,7 +204,7 @@ TEST_CASE("Goto function scopes"){
     CHECK_EOF(mock);
 }
 
-const std::string MODEL2 =  R"(<?xml version="1.0" encoding="utf-8"?>
+const std::string MODEL2 = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -246,7 +230,8 @@ system p;
 </system>
 </nta>)";
 
-TEST_CASE("Goto struct"){
+TEST_CASE("Goto struct")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -256,11 +241,8 @@ TEST_CASE("Goto struct"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/declaration"}, {"start", 63}, {"end", 64}});
@@ -268,7 +250,8 @@ TEST_CASE("Goto struct"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Goto struct members"){
+TEST_CASE("Goto struct members")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -278,11 +261,8 @@ TEST_CASE("Goto struct members"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/declaration"}, {"start", 25}, {"end", 30}});
@@ -290,7 +270,7 @@ TEST_CASE("Goto struct members"){
     CHECK_EOF(mock);
 }
 
-const std::string MODEL3 =  R"(<?xml version="1.0" encoding="utf-8"?>
+const std::string MODEL3 = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -320,7 +300,8 @@ system Process;
 </system>
 </nta>)";
 
-TEST_CASE("Goto const struct members"){
+TEST_CASE("Goto const struct members")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -330,11 +311,8 @@ TEST_CASE("Goto const struct members"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/declaration"}, {"start", 25}, {"end", 30}});
@@ -342,7 +320,8 @@ TEST_CASE("Goto const struct members"){
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Verifier template identifier"){
+TEST_CASE("Verifier template identifier")
+{
     auto repo = SystemRepository{};
     auto decls = DeclarationsModule{repo};
 
@@ -352,11 +331,8 @@ TEST_CASE("Verifier template identifier"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(decls)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(decls).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     REQUIRE(mock.receive() == json{{"xpath", "/nta/template[1]/declaration"}, {"start", 6}, {"end", 15}});

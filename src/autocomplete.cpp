@@ -13,223 +13,220 @@
 #include <functional>
 #include <iterator>
 
-
 namespace ranges = std::ranges;
 
 // Assigned to unique bits to allow filters to be represented as bitmasks
-enum SymType : uint8_t{
-    function = 1,
-    variable = 2,
-    channel = 4,
-    type = 8,
-    process = 16,
-    unknown = 32
-};
+enum SymType : uint8_t { function = 1, variable = 2, channel = 4, type = 8, process = 16, unknown = 32 };
 
-SymType sym_type(const UTAP::type_t& type){
-    if(type.is_channel())
+SymType sym_type(const UTAP::type_t& type)
+{
+    if (type.is_channel())
         return SymType::channel;
-    if(type.is_clock() || type.is_integral() || type.is_double() || type.is_string() || type.is_record())
+    if (type.is_clock() || type.is_integral() || type.is_double() || type.is_string() || type.is_record())
         return SymType::variable;
-    if(type.is(UTAP::Constants::TYPEDEF))
+    if (type.is(UTAP::Constants::TYPEDEF))
         return SymType::type;
-    if(type.is_function() || type.is_function_external())
+    if (type.is_function() || type.is_function_external())
         return SymType::function;
-    if(type.is_array())
+    if (type.is_array())
         return sym_type(type.get(0));
     return SymType::unknown;
 }
 
-struct Suggestion{
+struct Suggestion
+{
     std::string name;
     SymType type;
 };
 
 const auto guard_items = std::array{
-    Suggestion{"true", SymType::unknown}, Suggestion{"false", SymType::unknown},
+    Suggestion{"true", SymType::unknown},
+    Suggestion{"false", SymType::unknown},
 };
 
 const auto queries_items = std::array{
-    Suggestion{"int", SymType::type}, Suggestion{"true", SymType::unknown}, Suggestion{"false", SymType::unknown},
-    Suggestion{"forall", SymType::unknown}, Suggestion{"exists", SymType::unknown},
+    Suggestion{"int", SymType::type},       Suggestion{"true", SymType::unknown},
+    Suggestion{"false", SymType::unknown},  Suggestion{"forall", SymType::unknown},
+    Suggestion{"exists", SymType::unknown},
 };
 
-const auto parameter_items = std::array{
-    Suggestion{"int", SymType::type}, Suggestion{"double", SymType::type}, Suggestion{"clock", SymType::type},
-    Suggestion{"chan", SymType::type}, Suggestion{"bool", SymType::type}, Suggestion{"broadcast", SymType::unknown},
-    Suggestion{"const", SymType::unknown}, Suggestion{"urgent", SymType::unknown}
-};
+const auto parameter_items =
+    std::array{Suggestion{"int", SymType::type},      Suggestion{"double", SymType::type},
+               Suggestion{"clock", SymType::type},    Suggestion{"chan", SymType::type},
+               Suggestion{"bool", SymType::type},     Suggestion{"broadcast", SymType::unknown},
+               Suggestion{"const", SymType::unknown}, Suggestion{"urgent", SymType::unknown}};
 
-const auto default_items = std::array{
-    Suggestion{"int", SymType::type}, Suggestion{"double", SymType::type}, Suggestion{"clock", SymType::type},
-    Suggestion{"chan", SymType::type}, Suggestion{"bool", SymType::type}, Suggestion{"broadcast", SymType::unknown},
-    Suggestion{"const", SymType::unknown}, Suggestion{"urgent", SymType::unknown}, Suggestion{"void", SymType::unknown}, 
-    Suggestion{"meta", SymType::unknown}, Suggestion{"true", SymType::unknown}, Suggestion{"false", SymType::unknown},
-    Suggestion{"forall", SymType::unknown}, Suggestion{"exists", SymType::unknown}, Suggestion{"return", SymType::unknown},
-    Suggestion{"typedef", SymType::unknown}, Suggestion{"struct", SymType::unknown}
-};
+const auto default_items = std::array{Suggestion{"int", SymType::type},       Suggestion{"double", SymType::type},
+                                      Suggestion{"clock", SymType::type},     Suggestion{"chan", SymType::type},
+                                      Suggestion{"bool", SymType::type},      Suggestion{"broadcast", SymType::unknown},
+                                      Suggestion{"const", SymType::unknown},  Suggestion{"urgent", SymType::unknown},
+                                      Suggestion{"void", SymType::unknown},   Suggestion{"meta", SymType::unknown},
+                                      Suggestion{"true", SymType::unknown},   Suggestion{"false", SymType::unknown},
+                                      Suggestion{"forall", SymType::unknown}, Suggestion{"exists", SymType::unknown},
+                                      Suggestion{"return", SymType::unknown}, Suggestion{"typedef", SymType::unknown},
+                                      Suggestion{"struct", SymType::unknown}};
 
-template<>
-struct Serializer<SymType>{
-    static nlohmann::json serialize(const SymType& type){
-        switch(type){
-            case SymType::function: return "function";
-            case SymType::variable: return "variable";
-            case SymType::channel: return "channel";
-            case SymType::type: return "type";
-            case SymType::process: return "process";
-            default: return "unknown";
+template <>
+struct Serializer<SymType>
+{
+    static nlohmann::json serialize(const SymType& type)
+    {
+        switch (type) {
+        case SymType::function: return "function";
+        case SymType::variable: return "variable";
+        case SymType::channel: return "channel";
+        case SymType::type: return "type";
+        case SymType::process: return "process";
+        default: return "unknown";
         }
     }
 };
 
-template<>
-struct Serializer<std::vector<Suggestion>>{
-    static nlohmann::json serialize(const std::vector<Suggestion>& items){
+template <>
+struct Serializer<std::vector<Suggestion>>
+{
+    static nlohmann::json serialize(const std::vector<Suggestion>& items)
+    {
         nlohmann::json json_array;
-        for(const Suggestion& item : items){
-            json_array.push_back(nlohmann::json{
-                {"name", item.name}, 
-                {"type", Serializer<SymType>::serialize(item.type)}
-            });
+        for (const Suggestion& item : items) {
+            json_array.push_back(
+                nlohmann::json{{"name", item.name}, {"type", Serializer<SymType>::serialize(item.type)}});
         }
         return json_array;
     }
 };
 
-bool is_struct(const UTAP::symbol_t& sym){
+bool is_struct(const UTAP::symbol_t& sym)
+{
     return sym.get_type().size() == 1 && sym.get_type().get(0).is(UTAP::Constants::RECORD);
 }
 
-bool is_template(const UTAP::symbol_t& sym){
-    return sym.get_type().is(UTAP::Constants::INSTANCE);
-}
+bool is_template(const UTAP::symbol_t& sym) { return sym.get_type().is(UTAP::Constants::INSTANCE); }
 
-bool ends_with(std::string_view str, std::string_view ending){
+bool ends_with(std::string_view str, std::string_view ending)
+{
     size_t size = ending.size();
-    if(size > str.size())
+    if (size > str.size())
         return false;
 
     return str.substr(str.size() - size) == ending;
 }
 
-bool is_digit(unsigned char c) {
-    return std::isdigit(c);
-}
+bool is_digit(unsigned char c) { return std::isdigit(c); }
 
 // Uppaal will name unnamed locations _id0, _id1, _id2, etc. check for this pattern
-bool is_name_autogenerated(std::string_view name){
+bool is_name_autogenerated(std::string_view name)
+{
     return name.substr(0, 3) == "_id" && ranges::all_of(name.substr(3), is_digit);
 }
 
-class ResultBuilder{
+class ResultBuilder
+{
     std::vector<Suggestion> items;
     std::string prefix;
     uint8_t type_filter_mask;
 
     // Takes stl containers of Suggestions
-    void add_items(const auto& container) {
-        ranges::copy(container, std::back_inserter(items));
-    }
+    void add_items(const auto& container) { ranges::copy(container, std::back_inserter(items)); }
 
 public:
-    void set_ignored_mask(uint8_t ignore_mask){
-        type_filter_mask = ignore_mask;
-    }
-    void add_defaults(std::string_view xpath) {
-        if(xpath.ends_with("/queries!"))
+    void set_ignored_mask(uint8_t ignore_mask) { type_filter_mask = ignore_mask; }
+    void add_defaults(std::string_view xpath)
+    {
+        if (xpath.ends_with("/queries!"))
             add_items(queries_items);
-        else if(xpath.ends_with("/parameter!"))
+        else if (xpath.ends_with("/parameter!"))
             add_items(parameter_items);
-        else if(xpath.ends_with("label[@kind=\"guard\"]"))
+        else if (xpath.ends_with("label[@kind=\"guard\"]"))
             add_items(guard_items);
-        else if(!xpath.substr(xpath.find_last_of("/")).starts_with("/label"))
+        else if (!xpath.substr(xpath.find_last_of("/")).starts_with("/label"))
             add_items(default_items);
     }
     void set_prefix(std::string new_prefix) { prefix = std::move(new_prefix); }
-    void add_struct(const UTAP::type_t& type){
-        if(type.size() == 0)
+    void add_struct(const UTAP::type_t& type)
+    {
+        if (type.size() == 0)
             return;
-        if(type.get_kind() != UTAP::Constants::RECORD){
+        if (type.get_kind() != UTAP::Constants::RECORD) {
             add_struct(type.get(0));
             return;
         }
 
-        for(size_t i = 0; i < type.size(); i++){
+        for (size_t i = 0; i < type.size(); i++) {
             add_item(prefix + type.get_label(i), SymType::variable);
         }
     }
 
-    void add_template(const UTAP::template_t& templ){
-        for(const UTAP::variable_t& var : templ.variables){
+    void add_template(const UTAP::template_t& templ)
+    {
+        for (const UTAP::variable_t& var : templ.variables) {
             add_item(prefix + var.uid.get_name(), SymType::variable);
         }
-        for(const UTAP::function_t& func : templ.functions){
-            add_item(prefix + func.uid.get_name(), SymType::function); 
+        for (const UTAP::function_t& func : templ.functions) {
+            add_item(prefix + func.uid.get_name(), SymType::function);
         }
-        for(const UTAP::location_t& loc : templ.locations){
+        for (const UTAP::location_t& loc : templ.locations) {
             std::string_view name = loc.uid.get_name();
-            if(!is_name_autogenerated(name))
+            if (!is_name_autogenerated(name))
                 add_item(std::string{prefix}.append(name), SymType::unknown);
         }
     }
 
-    void add_item(std::string item, SymType type){
-        if((type_filter_mask & type) == 0U)
+    void add_item(std::string item, SymType type)
+    {
+        if ((type_filter_mask & type) == 0U)
             items.emplace_back(std::move(item), type);
     }
 
     std::vector<Suggestion>& get_items() { return items; }
 };
 
-void AutocompleteModule::configure(Server& server){
+void AutocompleteModule::configure(Server& server)
+{
     server.add_command<Identifier>("autocomplete", [this](const Identifier& id) -> std::vector<Suggestion> {
         auto results = ResultBuilder{};
-        
-        if(id.xpath.ends_with("/parameter!"))
+
+        if (id.xpath.ends_with("/parameter!"))
             results.set_ignored_mask(~SymType::type);
-        else if(id.xpath.ends_with("label[@kind=\"invariant\"]"))
+        else if (id.xpath.ends_with("label[@kind=\"invariant\"]"))
             results.set_ignored_mask(~(SymType::variable | SymType::function));
-        else if(id.xpath.ends_with("label[@kind=\"exponentialrate\"]"))
+        else if (id.xpath.ends_with("label[@kind=\"exponentialrate\"]"))
             results.set_ignored_mask(~SymType::variable);
-        else if(id.xpath.ends_with("label[@kind=\"select\"]"))
+        else if (id.xpath.ends_with("label[@kind=\"select\"]"))
             results.set_ignored_mask(~SymType::type);
-        else if(id.xpath.ends_with("label[@kind=\"guard\"]"))
+        else if (id.xpath.ends_with("label[@kind=\"guard\"]"))
             results.set_ignored_mask(~(SymType::variable | SymType::function));
-        else if(id.xpath.ends_with("label[@kind=\"synchronisation\"]"))
+        else if (id.xpath.ends_with("label[@kind=\"synchronisation\"]"))
             results.set_ignored_mask(~SymType::channel);
-        else if(id.xpath.ends_with("label[@kind=\"assignment\"]"))
+        else if (id.xpath.ends_with("label[@kind=\"assignment\"]"))
             results.set_ignored_mask(~(SymType::variable | SymType::function));
 
         bool is_query = id.xpath == "/nta/queries!";
-        UTAP::Document& doc = doc_repo.get_document();   
-        UTAP::declarations_t& decls = navigate_xpath(doc, id.xpath, id.offset);    
-        
+        UTAP::Document& doc = doc_repo.get_document();
+        UTAP::declarations_t& decls = navigate_xpath(doc, id.xpath, id.offset);
+
         auto offset = id.identifier.find_last_of('.');
-        if(offset != std::string::npos){
-            if(std::optional<UtapEntity> entity = find_declaration(doc, decls, id.identifier.substr(0, offset))){
+        if (offset != std::string::npos) {
+            if (std::optional<UtapEntity> entity = find_declaration(doc, decls, id.identifier.substr(0, offset))) {
                 results.set_prefix(id.identifier.substr(0, offset + 1));
-                std::visit(overloaded{
-                    [&](UTAP::symbol_t& sym){
-                        if(is_template(sym) && is_query)
-                            results.add_template(find_process(doc, sym.get_name()));
-                        else if(is_struct(sym))
-                            results.add_struct(sym.get_type().get(0));
-                    },
-                    [&](UTAP::type_t& type){
-                        results.add_struct(type);
-                    }
-                }, *entity);
+                std::visit(overloaded{[&](UTAP::symbol_t& sym) {
+                                          if (is_template(sym) && is_query)
+                                              results.add_template(find_process(doc, sym.get_name()));
+                                          else if (is_struct(sym))
+                                              results.add_struct(sym.get_type().get(0));
+                                      },
+                                      [&](UTAP::type_t& type) { results.add_struct(type); }},
+                           *entity);
             }
-        }else{
+        } else {
             results.add_defaults(id.xpath);
             bool use_templates = is_query || id.xpath == "/nta/system!";
-            DeclarationsWalker{doc, false}.visit_symbols(decls, [&](UTAP::symbol_t& symbol, const TextRange& range){
+            DeclarationsWalker{doc, false}.visit_symbols(decls, [&](UTAP::symbol_t& symbol, const TextRange& range) {
                 bool is_symbol_visible = symbol.get_frame() != decls.frame || range.begOffset < id.offset;
-                if(is_symbol_visible){
-                    if(!is_template(symbol))
+                if (is_symbol_visible) {
+                    if (!is_template(symbol))
                         results.add_item(symbol.get_name(), sym_type(symbol.get_type()));
-                    else if(use_templates)
+                    else if (use_templates)
                         results.add_item(symbol.get_name(), SymType::process);
                 }
                 return false;

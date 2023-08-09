@@ -6,7 +6,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-std::string MODEL =  R"(<?xml version="1.0" encoding="utf-8"?>
+std::string MODEL = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -39,7 +39,8 @@ system p;
 
 using json = nlohmann::json;
 
-TEST_CASE("Find usages of x declaraed in global declarations"){
+TEST_CASE("Find usages of x declaraed in global declarations")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -49,23 +50,20 @@ TEST_CASE("Find usages of x declaraed in global declarations"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.receive() == json{{{"start",11}, {"end", 12}, {"xpath", "/nta/declaration"}},
-                                {{"start",33}, {"end", 34}, {"xpath", "/nta/declaration"}},
-                                {{"start",41}, {"end", 42}, {"xpath", "/nta/declaration"}},
-                                {{"start",8}, {"end", 9}, {"xpath", "/nta/template[1]/declaration"}}});
+    CHECK(mock.receive() == json{{{"start", 11}, {"end", 12}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 33}, {"end", 34}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 41}, {"end", 42}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 8}, {"end", 9}, {"xpath", "/nta/template[1]/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-
-TEST_CASE("Find usages of x from template"){
+TEST_CASE("Find usages of x from template")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -75,22 +73,20 @@ TEST_CASE("Find usages of x from template"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.receive() == json{{{"start",11}, {"end", 12}, {"xpath", "/nta/declaration"}},
-                                {{"start",33}, {"end", 34}, {"xpath", "/nta/declaration"}},
-                                {{"start",41}, {"end", 42}, {"xpath", "/nta/declaration"}},
-                                {{"start",8}, {"end", 9}, {"xpath", "/nta/template[1]/declaration"}}});
+    CHECK(mock.receive() == json{{{"start", 11}, {"end", 12}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 33}, {"end", 34}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 41}, {"end", 42}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 8}, {"end", 9}, {"xpath", "/nta/template[1]/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Find usages of x inside function"){
+TEST_CASE("Find usages of x inside function")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -100,20 +96,18 @@ TEST_CASE("Find usages of x inside function"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.receive() == json{{{"start",57}, {"end", 58}, {"xpath", "/nta/declaration"}},
-                                {{"start",72}, {"end", 73}, {"xpath", "/nta/declaration"}}});
+    CHECK(mock.receive() == json{{{"start", 57}, {"end", 58}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 72}, {"end", 73}, {"xpath", "/nta/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Find usages inside types"){
+TEST_CASE("Find usages inside types")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -123,23 +117,19 @@ TEST_CASE("Find usages inside types"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.receive() == json{{{"start",29}, {"end", 30}, {"xpath", "/nta/declaration"}},
-                                {{"start",87}, {"end", 88}, {"xpath", "/nta/declaration"}},
-                                {{"start",92}, {"end", 93}, {"xpath", "/nta/declaration"}},
-                                {{"start",115}, {"end", 116}, {"xpath", "/nta/declaration"}}});
+    CHECK(mock.receive() == json{{{"start", 29}, {"end", 30}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 87}, {"end", 88}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 92}, {"end", 93}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 115}, {"end", 116}, {"xpath", "/nta/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-
-std::string MODEL2 =  R"(<?xml version="1.0" encoding="utf-8"?>
+std::string MODEL2 = R"(<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
 <nta>
     <declaration>
@@ -168,7 +158,8 @@ system p;
 </system>
 </nta>)";
 
-TEST_CASE("Type visited multiple times issue"){
+TEST_CASE("Type visited multiple times issue")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -178,20 +169,18 @@ TEST_CASE("Type visited multiple times issue"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.receive() == json{{{"start",11}, {"end", 12}, {"xpath", "/nta/declaration"}},
-                                {{"start",34}, {"end", 35}, {"xpath", "/nta/declaration"}}});
+    CHECK(mock.receive() == json{{{"start", 11}, {"end", 12}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 34}, {"end", 35}, {"xpath", "/nta/declaration"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Find variable in system declarations"){
+TEST_CASE("Find variable in system declarations")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -201,20 +190,18 @@ TEST_CASE("Find variable in system declarations"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
-    CHECK(mock.receive() == json{{{"start",49}, {"end", 50}, {"xpath", "/nta/declaration"}},
-                                {{"start",27}, {"end", 28}, {"xpath", "/nta/system"}}});
+    CHECK(mock.receive() == json{{{"start", 49}, {"end", 50}, {"xpath", "/nta/declaration"}},
+                                 {{"start", 27}, {"end", 28}, {"xpath", "/nta/system"}}});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
 
-TEST_CASE("Find template name"){
+TEST_CASE("Find template name")
+{
     auto repo = SystemRepository{};
     auto renaming = RenamingModule{repo};
 
@@ -224,11 +211,8 @@ TEST_CASE("Find template name"){
     mock.send_cmd("exit");
 
     auto server = Server{mock};
-    server.add_close_command("exit")
-        .add_module(repo)
-        .add_module(renaming)
-        .start();
-    
+    server.add_close_command("exit").add_module(repo).add_module(renaming).start();
+
     REQUIRE(mock.handshake());
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK(mock.expect_error());
