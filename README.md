@@ -2,12 +2,8 @@
 This is the UPPAAL language server or ULS for short
 
 ### Building
-`cmake -B build -DCMAKE_PREFIX_PATH=./local/`
-
-`./getlibs.sh`
-
+`cmake -B build`
 `cmake --build build`
-
 
 ### Dependencies
 This project uses the following libraries under licenses:
