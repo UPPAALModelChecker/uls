@@ -4,6 +4,9 @@ option(TESTING "Enables unit testing" OFF)
 project(ULS CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+#Hack used to force UTAP to compile statically
+set(BUILD_SHARED_LIBS OFF)
+
 #Get dependencies
 include(cmake/utap.cmake)
 include(cmake/nlohmann.cmake)

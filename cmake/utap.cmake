@@ -6,7 +6,6 @@ else(UTAP_FOUND)
   include(FetchContent)
   FetchContent_Declare(
     UTAP
-    SYSTEM
     GIT_REPOSITORY https://github.com/thorulf4/utap.git
     GIT_TAG rebased_lsp_changes
     GIT_SHALLOW TRUE # get only the last commit version
@@ -25,8 +24,11 @@ else(UTAP_FOUND)
 
   # Custom FetchContent_MakeAvailable implementation to exclude UTAP from install
   FetchContent_GetProperties(UTAP)
-  if(NOT UTAP_POPULATED)
+  if(NOT utap_POPULATED)
     FetchContent_Populate(UTAP)
-    add_subdirectory(${UTAP_SOURCE_DIR} ${UTAP_BINARY_DIR} EXCLUDE_FROM_ALL)
+    
+    set(UTAP_STATIC ON)
+
+    add_subdirectory(${utap_SOURCE_DIR} ${utap_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
 endif(UTAP_FOUND)
