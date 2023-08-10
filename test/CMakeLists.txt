@@ -1,4 +1,4 @@
-find_package(doctest REQUIRED)
+include(../cmake/doctest.cmake)
 
 add_executable(test_server test_server.cpp)
 target_link_libraries(test_server PRIVATE doctest::doctest uls_lib)
