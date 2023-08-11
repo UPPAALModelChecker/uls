@@ -11,5 +11,13 @@ else(doctest_FOUND)
     GIT_TAG "v2.4.8"
   )
 
-  FetchContent_MakeAvailable(Doctest)
+  # Custom FetchContent_MakeAvailable implementation to exclude Doctest from install
+  FetchContent_GetProperties(Doctest)
+  if(NOT doctest_POPULATED)
+    FetchContent_Populate(Doctest)
+    
+    set(doctest_STATIC ON)
+
+    add_subdirectory(${doctest_SOURCE_DIR} ${doctest_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
 endif(doctest_FOUND)
