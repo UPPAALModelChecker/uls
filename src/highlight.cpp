@@ -50,11 +50,11 @@ void Highlight::configure(Server& server)
 
     repository.add_on_document_update([this, &server](UTAP::Document& doc) {
         auto keywords = keywords_for_path(doc, repository.get_current_xpath());
-        server.send_notification("notif/keywords", keywords);
+        server.send_notification("keywords", keywords);
     });
 
     repository.add_on_current_node_changed([this, &server](const std::string& xpath) {
         auto keywords = keywords_for_path(repository.get_document(), xpath);
-        server.send_notification("notif/keywords", keywords);
+        server.send_notification("keywords", keywords);
     });
 }

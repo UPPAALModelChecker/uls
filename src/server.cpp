@@ -9,8 +9,8 @@ namespace views = std::ranges::views;
 using namespace std::chrono_literals;
 using json = nlohmann::json;
 
-nlohmann::json OK_RESPONSE = {{"res", "OK"}};
-nlohmann::json FAIL_RESPONSE = {{"res", "FAIL"}};
+nlohmann::json OK_RESPONSE = {"OK"};
+nlohmann::json FAIL_RESPONSE = {"FAIL"};
 
 const Command& get_command(const std::vector<Command>& commands, const std::string& command_name)
 {
@@ -34,12 +34,12 @@ void Server::start()
 
             const Command& command = get_command(commands, message["cmd"].get<std::string>());
             auto response = command.callback(message["args"]);
-            send("response/" + command.name, response);
+            send("response/" + command.name, std::move(response));
         } catch (nlohmann::json::parse_error& e) {
-            send("error", e.what());
+            send_error(e.what());
             stop();
         } catch (std::exception& e) {
-            send("error", e.what());
+            send_error(e.what());
         }
     }
 }
@@ -55,7 +55,12 @@ Server& Server::add_close_command(std::string name)
 
 void Server::send(const std::string& message_type, const nlohmann::json& message)
 {
-    io.out << json{{"type", message_type}, {"msg", message}} << std::endl;
+    io.out << json{{"res", message_type}, {"info", message}} << std::endl;
+}
+
+void Server::send_error(const nlohmann::json& message)
+{
+    send("err", message);
 }
 
 void Server::stop() { is_running = false; }
