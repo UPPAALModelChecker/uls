@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26.4)
-option(TESTING "Enables unit testing" OFF)
+option(ULS_TESTING "Enables unit testing" OFF)
 
 project(ULS CXX)
 set(CMAKE_CXX_STANDARD 20)
@@ -13,7 +13,7 @@ include(cmake/nlohmann.cmake)
 
 add_subdirectory(src)
 
-if(TESTING)
+if(ULS_TESTING)
   enable_testing()
   add_subdirectory(test)
 endif()
