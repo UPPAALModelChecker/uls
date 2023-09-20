@@ -5,6 +5,9 @@ if (doctest_FOUND)
 else(doctest_FOUND)
   message(STATUS "Failed to find Doctest, will try fetching and compiling from source.")
   include(FetchContent)
+  set(DOCTEST_WITH_TESTS OFF CACHE BOOL "doctest tests")
+  set(DOCTEST_WITH_MAIN_IN_STATIC_LIB ON CACHE BOOL "test runner in doctest_with_main static library")
+  set(DOCTEST_USE_STD_HEADERS OFF CACHE BOOL "Use std headers")
   FetchContent_Declare(
     Doctest
     GIT_REPOSITORY "https://github.com/onqtam/doctest"
