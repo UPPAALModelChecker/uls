@@ -72,8 +72,7 @@ class SymFinder
 public:
     using SymbolSource = std::variant<UTAP::declarations_t*, UTAP::type_t>;
     SymFinder(UTAP::Document& doc, UTAP::declarations_t& source): doc{doc}, symbol_source{&source} {}
-    void set_source(UTAP::type_t source) { symbol_source = SymbolSource{std::move(source)}; }
-    void set_source(UTAP::declarations_t& source) { symbol_source = SymbolSource{&source}; }
+    void set_source(SymbolSource source) { symbol_source = std::move(source); }
 
     std::optional<Sym> find(std::string_view name)
     {
@@ -99,8 +98,8 @@ std::optional<Sym> find_sym(UTAP::Document& doc, UTAP::declarations_t& decls, st
                 finder.set_source(struct_symbol->type.get(0).get(0));
             else if (struct_symbol->type.is(UTAP::Constants::INSTANCE)){
                 if(auto opt_process = find_process(doc, label))
-                    finder.set_source(*opt_process);
-            }else
+                    finder.set_source(&static_cast<UTAP::template_t&>(*opt_process));
+            } else
                 finder.set_source(struct_symbol->type.get(0));
         } else {
             return std::nullopt;
