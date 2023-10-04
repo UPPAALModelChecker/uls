@@ -58,15 +58,14 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path,
     return decl;
 }
 
-UTAP::template_t& find_process(UTAP::Document& doc, std::string_view name)
+std::optional<std::reference_wrapper<UTAP::template_t>> find_process(UTAP::Document& doc, std::string_view name)
 {
     for (auto& process : doc.get_processes()) {
         if (process.uid.get_name() == name) {
             if (process.templ)
                 return *process.templ;
-            else
-                throw std::logic_error("Process did not have a template");
+            return std::nullopt;
         }
     }
-    throw std::logic_error("No such process");
+    return std::nullopt;
 }

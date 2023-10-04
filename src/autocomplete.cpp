@@ -201,10 +201,11 @@ void AutocompleteModule::configure(Server& server)
             if (std::optional<UtapEntity> entity = find_declaration(doc, decls, id.identifier.substr(0, offset))) {
                 results.set_prefix(id.identifier.substr(0, offset + 1));
                 std::visit(overloaded{[&](UTAP::symbol_t& sym) {
-                                          if (is_template(sym) && is_query)
-                                              results.add_template(find_process(doc, sym.get_name()));
-                                          else if (is_struct(sym))
-                                              results.add_struct(sym.get_type().get(0));
+                                        if (is_template(sym) && is_query){
+                                            if(auto process = find_process(doc, sym.get_name()))
+                                                results.add_template(*process);
+                                        } else if (is_struct(sym))
+                                            results.add_struct(sym.get_type().get(0));
                                       },
                                       [&](UTAP::type_t& type) { results.add_struct(type); }},
                            *entity);
