@@ -148,8 +148,8 @@ class ResultBuilder
 
     // Takes stl containers of Suggestions
     void add_items(const auto& ... container) { 
-        auto type_check = [type_filter_mask](const Suggestion& s) { return (type_filter_mask & s.type) == 0U };
-        (ranges::copy_if(container, std::back_inserter(items) add_item), ...); 
+        auto type_check = [filter=type_filter_mask](const Suggestion& s) { return (filter & s.type) == 0U; };
+        (ranges::copy_if(container, std::back_inserter(items), type_check), ...); 
     }
 
 public:
