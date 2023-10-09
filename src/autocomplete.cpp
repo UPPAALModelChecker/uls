@@ -66,6 +66,35 @@ const auto default_items = std::array{Suggestion{"int", SymType::type},       Su
                                       Suggestion{"return", SymType::unknown}, Suggestion{"typedef", SymType::unknown},
                                       Suggestion{"struct", SymType::unknown}};
 
+const auto builtin_functions = std::array{Suggestion{"abs", SymType::function},
+                                          Suggestion{"fabs", SymType::function}, Suggestion{"fmod", SymType::function},
+                                          Suggestion{"fma", SymType::function}, Suggestion{"fmax", SymType::function},
+                                          Suggestion{"fmin", SymType::function}, Suggestion{"exp", SymType::function},
+                                          Suggestion{"exp2", SymType::function}, Suggestion{"expm1", SymType::function},
+                                          Suggestion{"ln", SymType::function}, Suggestion{"log", SymType::function},
+                                          Suggestion{"log10", SymType::function}, Suggestion{"log2", SymType::function},
+                                          Suggestion{"log1p", SymType::function}, Suggestion{"pow", SymType::function},
+                                          Suggestion{"sqrt", SymType::function}, Suggestion{"cbrt", SymType::function},
+                                          Suggestion{"hypot", SymType::function}, Suggestion{"sin", SymType::function},
+                                          Suggestion{"cos", SymType::function}, Suggestion{"tan", SymType::function},
+                                          Suggestion{"asin", SymType::function}, Suggestion{"acos", SymType::function},
+                                          Suggestion{"atan", SymType::function}, Suggestion{"atan2", SymType::function},
+                                          Suggestion{"sinh", SymType::function}, Suggestion{"cosh", SymType::function},
+                                          Suggestion{"tanh", SymType::function}, Suggestion{"asinh", SymType::function},
+                                          Suggestion{"acosh", SymType::function}, Suggestion{"atanh", SymType::function},
+                                          Suggestion{"erf", SymType::function}, Suggestion{"erfc", SymType::function},
+                                          Suggestion{"tgamma", SymType::function}, Suggestion{"lgamma", SymType::function},
+                                          Suggestion{"ceil", SymType::function}, Suggestion{"floor", SymType::function},
+                                          Suggestion{"trunc", SymType::function}, Suggestion{"round", SymType::function},
+                                          Suggestion{"fint", SymType::function}, Suggestion{"ldexp", SymType::function},
+                                          Suggestion{"ilogb", SymType::function}, Suggestion{"logb", SymType::function},
+                                          Suggestion{"nextafter", SymType::function}, Suggestion{"copysign", SymType::function},
+                                          Suggestion{"signbit", SymType::function}, Suggestion{"random", SymType::function},
+                                          Suggestion{"random_normal", SymType::function}, Suggestion{"random_poisson", SymType::function},
+                                          Suggestion{"random_arcsine", SymType::function}, Suggestion{"random_beta", SymType::function},
+                                          Suggestion{"random_gamma", SymType::function}, Suggestion{"tri", SymType::function},
+                                          Suggestion{"random_weibull", SymType::function}};
+
 template <>
 struct Serializer<SymType>
 {
@@ -118,20 +147,23 @@ class ResultBuilder
     uint8_t type_filter_mask;
 
     // Takes stl containers of Suggestions
-    void add_items(const auto& container) { ranges::copy(container, std::back_inserter(items)); }
+    void add_items(const auto& ... container) { 
+        auto type_check = [type_filter_mask](const Suggestion& s) { return (type_filter_mask & s.type) == 0U };
+        (ranges::copy_if(container, std::back_inserter(items) add_item), ...); 
+    }
 
 public:
     void set_ignored_mask(uint8_t ignore_mask) { type_filter_mask = ignore_mask; }
     void add_defaults(std::string_view xpath)
     {
         if (xpath.ends_with("/queries!"))
-            add_items(queries_items);
+            add_items(queries_items, builtin_functions);
         else if (xpath.ends_with("/parameter!"))
             add_items(parameter_items);
         else if (xpath.ends_with("label[@kind=\"guard\"]"))
-            add_items(guard_items);
-        else if (!xpath.substr(xpath.find_last_of("/")).starts_with("/label"))
-            add_items(default_items);
+            add_items(guard_items, builtin_functions);
+        else
+            add_items(default_items, builtin_functions);
     }
     void set_prefix(std::string new_prefix) { prefix = std::move(new_prefix); }
     void add_struct(const UTAP::type_t& type)
