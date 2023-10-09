@@ -24,7 +24,12 @@ bool is_unique(std::string_view item)
         "M_LOG10E",  "M_LOG2E",  "M_PI",      "M_PI_2",   "M_PI_4",     "M_SQRT1_2", "M_SQRT2",   "UINT16_MAX",
         "UINT8_MAX", "bool",     "broadcast", "chan",     "clock",      "const",     "double",    "exists",
         "false",     "forall",   "int",       "int16_t",  "int32_t",    "int8_t",    "meta",      "return",
-        "struct",    "true",     "typedef",   "uint16_t", "uint8_t",    "urgent",    "void"};
+        "struct",    "true",     "typedef",   "uint16_t", "uint8_t",    "urgent",    "void", "abs","fabs",
+        "fmod","fma","fmax","fmin","exp","exp2","expm1","ln","log","log10","log2","log1p","pow","sqrt",
+        "cbrt","hypot","sin","cos","tan","asin","acos","atan","atan2","sinh","cosh","tanh","asinh","acosh",
+        "atanh","erf","erfc","tgamma","lgamma","ceil","floor","trunc","round","fint","ldexp","ilogb","logb",
+        "nextafter","copysign","signbit","random","random_normal","random_poisson","random_arcsine","random_beta",
+        "random_gamma","tri","random_weibull"};
     return std::ranges::find(filtered_names, item) == filtered_names.end();
 }
 
@@ -119,12 +124,15 @@ TEST_CASE("Autocomplete test default items")
     // All built-in typedefs are included, the intresting items are (item1, item2, item3)
     auto results = mock.receive();
     CHECK(name_view(results) ==
-          json{"int",       "double",   "clock",    "chan",      "bool",       "broadcast", "const",      "urgent",
-               "void",      "meta",     "true",     "false",     "forall",     "exists",    "return",     "typedef",
-               "struct",    "INT8_MIN", "INT8_MAX", "UINT8_MAX", "INT16_MIN",  "INT16_MAX", "UINT16_MAX", "INT32_MIN",
-               "INT32_MAX", "int8_t",   "uint8_t",  "int16_t",   "uint16_t",   "int32_t",   "FLT_MIN",    "FLT_MAX",
-               "DBL_MIN",   "DBL_MAX",  "M_PI",     "M_PI_2",    "M_PI_4",     "M_E",       "M_LOG2E",    "M_LOG10E",
-               "M_LN2",     "M_LN10",   "M_1_PI",   "M_2_PI",    "M_2_SQRTPI", "M_SQRT2",   "M_SQRT1_2"});
+          json{"int","double","clock","chan","bool","broadcast","const","urgent","void","meta","true","false","forall",
+          "exists","return","typedef","struct","abs","fabs","fmod","fma","fmax","fmin","exp","exp2","expm1","ln","log",
+          "log10","log2","log1p","pow","sqrt","cbrt","hypot","sin","cos","tan","asin","acos","atan","atan2","sinh","cosh",
+          "tanh","asinh","acosh","atanh","erf","erfc","tgamma","lgamma","ceil","floor","trunc","round","fint","ldexp",
+          "ilogb","logb","nextafter","copysign","signbit","random","random_normal","random_poisson","random_arcsine",
+          "random_beta","random_gamma","tri","random_weibull","INT8_MIN","INT8_MAX","UINT8_MAX","INT16_MIN","INT16_MAX",
+          "UINT16_MAX","INT32_MIN","INT32_MAX","int8_t","uint8_t","int16_t","uint16_t","int32_t","FLT_MIN","FLT_MAX",
+          "DBL_MIN","DBL_MAX","M_PI","M_PI_2","M_PI_4","M_E","M_LOG2E","M_LOG10E","M_LN2","M_LN10","M_1_PI","M_2_PI",
+          "M_2_SQRTPI","M_SQRT2","M_SQRT1_2"});
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
