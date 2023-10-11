@@ -1,4 +1,5 @@
 /.vscode
+/win-build
 /.idea
 /build
 /cmake-build*
