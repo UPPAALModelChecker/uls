@@ -22,7 +22,7 @@ UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path)
  */
 UTAP::declarations_t& navigate_xpath(UTAP::Document& doc, std::string_view path, uint32_t pos);
 
-UTAP::template_t& find_process(UTAP::Document& doc, std::string_view name);
+std::optional<std::reference_wrapper<UTAP::template_t>> find_process(UTAP::Document& doc, std::string_view name);
 
 /**
  * This class is used to iterate through symbols from a given declarations

@@ -96,9 +96,10 @@ std::optional<Sym> find_sym(UTAP::Document& doc, UTAP::declarations_t& decls, st
         if (struct_symbol.has_value()) {
             if (struct_symbol->type.is_constant())
                 finder.set_source(struct_symbol->type.get(0).get(0));
-            else if (struct_symbol->type.is(UTAP::Constants::INSTANCE))
-                finder.set_source(&find_process(doc, label));
-            else
+            else if (struct_symbol->type.is(UTAP::Constants::INSTANCE)){
+                if(auto opt_process = find_process(doc, label))
+                    finder.set_source(&static_cast<UTAP::template_t&>(*opt_process));
+            } else
                 finder.set_source(struct_symbol->type.get(0));
         } else {
             return std::nullopt;
