@@ -366,3 +366,22 @@ TEST_CASE("Autocomplete template dont see locations")
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
+
+TEST_CASE("Autocomplete fails when identifier matches template name"){
+    auto repo = SystemRepository{};
+    auto autocomplete = AutocompleteModule{repo};  // Use an empty set of builtin items
+
+    auto mock = MockIO{};
+    mock.send("upload", MODEL3);
+    mock.send("autocomplete", {{"xpath", "/nta/queries!"}, {"identifier", "Template."}, {"offset", 1}});
+    mock.send_cmd("exit");
+
+    auto server = Server{mock};
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
+    REQUIRE(mock.handshake());
+    REQUIRE(mock.receive() == OK_RESPONSE);
+    CHECK(unique_name_view(mock.receive()) == json{});
+    REQUIRE(mock.receive() == OK_RESPONSE);
+    CHECK_EOF(mock);
+}
