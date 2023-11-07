@@ -12,13 +12,12 @@ using json = nlohmann::json;
 nlohmann::json OK_RESPONSE = {"OK"};
 nlohmann::json FAIL_RESPONSE = {"FAIL"};
 
-const Command& get_command(const std::vector<Command>& commands, const std::string& command_name)
+std::vector<Command>::const_iterator find_command(const std::vector<Command>& commands, const std::string& name)
 {
-    for (const auto& command : commands) {
-        if (command.name == command_name)
-            return command;
-    }
-    throw std::invalid_argument("Unknown command name " + command_name);
+    auto it = std::find_if(commands.begin(), commands.end(), [&name](const Command& cmd) { return cmd.name == name; });
+    if (it == commands.end())
+        throw std::invalid_argument("Unknown command " + name);
+    return it;
 }
 
 void Server::start()
@@ -31,10 +30,9 @@ void Server::start()
     while (is_running) {
         try {
             io.in >> message;
-
-            const Command& command = get_command(commands, message["cmd"].get<std::string>());
-            auto response = command.callback(message["args"]);
-            send("response/" + command.name, std::move(response));
+            auto cmd = find_command(commands, message["cmd"].get<std::string>());
+            auto response = cmd->callback(message["args"]);
+            send("response/" + cmd->name, response);
         } catch (nlohmann::json::parse_error& e) {
             send_error(e.what());
             stop();
