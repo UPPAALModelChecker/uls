@@ -22,5 +22,5 @@ jobs:
       run: cmake --build "$BUILD_DIR" --config $CMAKE_BUILD_TYPE
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
+      working-directory: ${{env.BUILD_DIR}}
       run: ctest --config $CMAKE_BUILD_TYPE --output-on-failure

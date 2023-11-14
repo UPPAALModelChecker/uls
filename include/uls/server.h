@@ -29,6 +29,7 @@ class Server
     bool is_running{false};
 
     void send(const std::string& message_type, const nlohmann::json& message);
+    void send_error(const nlohmann::json& message);
 
 public:
     Server(IOStream io): io(std::move(io)) {}
@@ -58,7 +59,7 @@ public:
     void send_notification(const std::string& type, Data&& element)
     {
         auto message = Serializer<std::remove_reference_t<Data>>::serialize(std::forward<Data>(element));
-        send(type, message);
+        send("notif/" + type, message);
     }
 
     void start();
