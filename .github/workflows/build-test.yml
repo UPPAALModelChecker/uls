@@ -3,8 +3,22 @@ name: Build and Test
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - CMakeLists.txt
+      - include/**
+      - src/**
+      - test/**
+      - toolchains/**
   pull_request:
     branches: [ "main" ]
+    types: [synchronize, opened, reopened, ready_for_review]
+    paths:
+      - CMakeLists.txt
+      - include/**
+      - src/**
+      - test/**
+      - toolchains/**
+  workflow_dispatch:
 
 jobs:
   build:
