@@ -42,7 +42,7 @@ jobs:
         id: linux64-keys
         run: |
           key2=ccache-linux64-
-          key1="${key2}$(date +%V)"
+          key1="${key2}$(date +%j)"
           echo "key1=${key1}" >> $GITHUB_OUTPUT
           echo "key2=${key2}" >> $GITHUB_OUTPUT
 
