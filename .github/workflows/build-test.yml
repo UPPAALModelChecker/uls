@@ -1,3 +1,4 @@
+---
 name: Build and Test
 
 on:
@@ -24,17 +25,48 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      CCACHE_DIR: ${{ github.workspace }}/CCACHE
       CMAKE_BUILD_TYPE: Debug
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
       BUILD_DIR: ${{github.workspace}}/build
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Configure CMake
-      run: cmake -B "$BUILD_DIR"
+      - name: Install Build Tools
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install ccache
 
-    - name: Build
-      run: cmake --build "$BUILD_DIR" --config $CMAKE_BUILD_TYPE
+      - name: Compute CCache keys
+        id: linux64-keys
+        run: |
+          key2=ccache-linux64-
+          key1="${key2}$(date +%V)"
+          echo "key1=${key1}" >> $GITHUB_OUTPUT
+          echo "key2=${key2}" >> $GITHUB_OUTPUT
 
-    - name: Test
-      working-directory: ${{env.BUILD_DIR}}
-      run: ctest --config $CMAKE_BUILD_TYPE --output-on-failure
+      - name: Restore CCache
+        id: ccache-restore
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ steps.linux64-keys.outputs.key1 }}
+          restore-keys: ${{ steps.linux64-keys.outputs.key2 }}
+      - name: CCache Limits and Stats
+        run: |
+          ccache -M120M
+          ccache --show-stats
+
+      - name: Configure CMake
+        run: cmake -B "$BUILD_DIR"
+
+      - name: Build
+        run: cmake --build "$BUILD_DIR" --config $CMAKE_BUILD_TYPE
+
+      - name: Test
+        working-directory: ${{env.BUILD_DIR}}
+        run: ctest --config $CMAKE_BUILD_TYPE --output-on-failure
+
+      - name: CCache Stats
+        run: ccache --show-stats
