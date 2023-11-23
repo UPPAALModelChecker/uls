@@ -8,7 +8,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(ULS_WITH_TESTS "ULS Unit Tests" ON)
-option(ULS_WITH_WERROR "Enable warnings as errors" ON)
+option(ULS_WITH_WERROR "Enable warnings as errors" OFF)
 
 #Hack used to force UTAP to compile statically
 set(BUILD_SHARED_LIBS OFF)
