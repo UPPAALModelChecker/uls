@@ -385,3 +385,51 @@ TEST_CASE("Autocomplete fails when identifier matches template name"){
     REQUIRE(mock.receive() == OK_RESPONSE);
     CHECK_EOF(mock);
 }
+
+const std::string MODEL4 = R"(<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.5//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_5.dtd'>
+<nta>
+    <declaration>
+struct {
+    int x;
+    int y;
+    int z;
+} anon;
+
+    </declaration>
+	<template>
+		<name x="5" y="5">Template</name>
+        <parameter>int xax</parameter>
+		<declaration></declaration>
+		<location id="id0" x="-76" y="-68">
+			<name x="-86" y="-102">Init</name>
+		</location>
+        <location id="id1" x="-86" y="-68">
+		</location>
+		<init ref="id0"/>
+	</template>
+	<system>
+p = Template();
+system p;
+</system>
+</nta>)";
+
+TEST_CASE("autocompleting anonymous struct members")
+{
+    auto repo = SystemRepository{};
+    auto autocomplete = AutocompleteModule{repo};
+
+    auto mock = MockIO{};
+    mock.send("upload", MODEL4);
+    mock.send("autocomplete", {{"xpath", "/nta/declaration!"}, {"identifier", "anon."}, {"offset", 51}});
+    mock.send_cmd("exit");
+
+    auto server = Server{mock};
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
+    REQUIRE(mock.handshake());
+    REQUIRE(mock.receive() == OK_RESPONSE);
+    CHECK(name_view(mock.receive()) == json{"anon.x", "anon.y", "anon.z"});
+    REQUIRE(mock.receive() == OK_RESPONSE);
+    CHECK_EOF(mock);
+}
