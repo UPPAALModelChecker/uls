@@ -225,6 +225,7 @@ void AutocompleteModule::configure(Server& server)
             results.set_ignored_mask(~(SymType::variable | SymType::function));
 
         bool is_query = id.xpath == "/nta/queries!";
+        bool ignore_cursor_pos_visibility = id.xpath.find("label[") != std::string_view::npos;
         UTAP::Document& doc = doc_repo.get_document();
         UTAP::declarations_t& decls = navigate_xpath(doc, id.xpath, id.offset);
 
@@ -246,7 +247,7 @@ void AutocompleteModule::configure(Server& server)
             results.add_defaults(id.xpath);
             bool use_templates = is_query || id.xpath == "/nta/system!";
             DeclarationsWalker{doc, false}.visit_symbols(decls, [&](UTAP::symbol_t& symbol, const TextRange& range) {
-                bool is_symbol_visible = symbol.get_frame() != decls.frame || range.begOffset < id.offset;
+                bool is_symbol_visible = symbol.get_frame() != decls.frame || ignore_cursor_pos_visibility || range.begOffset < id.offset;
                 if (is_symbol_visible) {
                     if (!is_template(symbol))
                         results.add_item(symbol.get_name(), sym_type(symbol.get_type()));

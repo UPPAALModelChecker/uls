@@ -137,6 +137,28 @@ TEST_CASE("Autocomplete test default items")
     CHECK_EOF(mock);
 }
 
+TEST_CASE("Autocomplete test template declarations")
+{
+    auto repo = SystemRepository{};
+    auto autocomplete = AutocompleteModule{repo};
+
+    auto mock = MockIO{};
+    mock.send("upload", MODEL);
+    mock.send("autocomplete", {{"xpath", "/nta/template[1]/label[@kind=\"invariant\"]"}, {"identifier", "it"}, {"offset", 0}});
+    mock.send_cmd("exit");
+
+    auto server = Server{mock};
+    server.add_close_command("exit").add_module(repo).add_module(autocomplete).start();
+
+    REQUIRE(mock.handshake());
+    REQUIRE(mock.receive() == OK_RESPONSE);
+    auto results = mock.receive();
+    CHECK(unique_name_view(results) == json{"y","f","p_a","e","x"});
+    REQUIRE(mock.receive() == OK_RESPONSE);
+    CHECK_EOF(mock);
+}
+
+
 TEST_CASE("Autocomplete struct type")
 {
     auto repo = SystemRepository{};
