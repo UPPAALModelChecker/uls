@@ -125,9 +125,13 @@ struct Serializer<std::vector<Suggestion>>
     }
 };
 
-bool is_struct(const UTAP::symbol_t& sym)
+std::optional<UTAP::type_t> get_struct_type(const UTAP::symbol_t& sym)
 {
-    return sym.get_type().size() == 1 && sym.get_type().get(0).is(UTAP::Constants::RECORD);
+    if(sym.get_type().size() == 1 && sym.get_type().get(0).is(UTAP::Constants::RECORD))
+        return sym.get_type().get(0);
+    else if(sym.get_type().is(UTAP::Constants::RECORD))
+        return sym.get_type();
+    return std::nullopt;
 }
 
 bool is_template(const UTAP::symbol_t& sym) { return sym.get_type().is(UTAP::Constants::INSTANCE); }
@@ -237,8 +241,8 @@ void AutocompleteModule::configure(Server& server)
                                         if (is_template(sym) && is_query){
                                             if(auto process = find_process(doc, sym.get_name()))
                                                 results.add_template(*process);
-                                        } else if (is_struct(sym))
-                                            results.add_struct(sym.get_type().get(0));
+                                        } else if (auto struct_type = get_struct_type(sym))
+                                            results.add_struct(*struct_type);
                                       },
                                       [&](UTAP::type_t& type) { results.add_struct(type); }},
                            *entity);
